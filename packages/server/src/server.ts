@@ -337,6 +337,14 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+app.get('/', (_req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'RoboRally Server API',
+    endpoints: ['/health', '/api/rooms']
+  });
+});
+
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${NODE_ENV}`);
