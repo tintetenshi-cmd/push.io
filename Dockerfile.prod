@@ -1,0 +1,53 @@
+# Production Dockerfile for RoboRally
+FROM node:20-alpine AS builder
+
+# Install pnpm
+RUN npm install -g pnpm@9.4.0
+
+WORKDIR /app
+
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/server/package.json ./packages/server/
+COPY packages/client/package.json ./packages/client/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY packages/shared/ ./packages/shared/
+COPY packages/server/ ./packages/server/
+COPY packages/client/ ./packages/client/
+
+# Build shared package
+RUN pnpm --filter @roborally/shared build
+
+# Build server
+RUN pnpm --filter @roborally/server build
+
+# Build client
+RUN pnpm --filter @roborally/client build
+
+# Production stage
+FROM node:20-alpine AS production
+
+RUN npm install -g pnpm@9.4.0
+
+WORKDIR /app
+
+# Copy built files
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/packages/shared/package.json /app/packages/shared/dist ./packages/shared/
+COPY --from=builder /app/packages/server/package.json /app/packages/server/dist ./packages/server/
+COPY --from=builder /app/packages/client/dist ./packages/client/dist
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+ENV NODE_ENV=production
+ENV PORT=10000
+
+EXPOSE 10000
+
+CMD ["node", "packages/server/dist/server.js"]

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: roborally-server
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    autoDeploy: true
+
+  - type: static
+    name: roborally-client
+    runtime: static
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    staticPublishPath: ./packages/client/dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /socket.io/*
+        destination: https://roborally-server.onrender.com/socket.io/*

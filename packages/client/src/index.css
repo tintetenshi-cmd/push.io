@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply touch-manipulation;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-primary-900 via-primary-800 to-indigo-900 min-h-screen text-white overflow-hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-hero {
+    @apply w-full h-20 text-2xl font-bold rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 
+           hover:from-primary-400 hover:to-primary-500 transform hover:scale-105 
+           transition-all duration-300 shadow-lg hover:shadow-primary-500/50
+           flex items-center justify-center gap-3;
+  }
+  
+  .btn-secondary {
+    @apply w-full h-16 text-xl font-semibold rounded-xl bg-primary-700 
+           hover:bg-primary-600 transform hover:scale-105 
+           transition-all duration-300 shadow-lg
+           flex items-center justify-center gap-3;
+  }
+  
+  .btn-outline {
+    @apply w-full h-16 text-xl font-semibold rounded-xl border-2 border-primary-400 
+           hover:bg-primary-800/50 transform hover:scale-105 
+           transition-all duration-300
+           flex items-center justify-center gap-3;
+  }
+  
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  
+  .modal-content {
+    @apply bg-primary-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+  }
+  
+  .card-slot {
+    @apply w-20 h-28 rounded-lg border-2 border-dashed border-primary-400/50 
+           bg-primary-900/30 flex items-center justify-center
+           hover:border-primary-400 transition-colors;
+  }
+  
+  .card-filled {
+    @apply w-20 h-28 rounded-lg border-2 border-primary-400 bg-primary-700 
+           flex flex-col items-center justify-center shadow-lg;
+  }
+  
+  .card-hand {
+    @apply w-20 h-28 rounded-lg border-2 border-primary-500 bg-primary-600 
+           flex flex-col items-center justify-center shadow-md cursor-grab
+           hover:shadow-lg hover:-translate-y-1 transition-all;
+  }
+  
+  .color-swatch {
+    @apply w-10 h-10 rounded-full border-4 border-transparent cursor-pointer
+           hover:scale-110 transition-transform shadow-md;
+  }
+  
+  .color-swatch.selected {
+    @apply border-white shadow-lg;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.8); }
+  }
+}
