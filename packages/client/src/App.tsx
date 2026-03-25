@@ -8,16 +8,21 @@ import PersonalizeModal from './components/PersonalizeModal';
 import RulesModal from './components/RulesModal';
 import GameLobby from './components/GameLobby';
 import GameRoom from './components/GameRoom';
-import type { GamePhase } from '@roborally/shared';
 
 function App(): React.ReactElement {
   const [view, setView] = useState<'menu' | 'lobby' | 'game'>('menu');
   const [showPersonalize, setShowPersonalize] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [showLobby, setShowLobby] = useState(false);
 
   const { isConnected, gameState } = useSocket();
-  const { playerSettings, roomCode, setRoomCode } = useGameStore();
+  const { playerSettings, setRoomCode } = useGameStore();
+
+  const handleLeaveGame = (): void => {
+    setView('menu');
+    setRoomCode(null);
+  };
 
   useEffect(() => {
     if (gameState.phase === 'lobby') {
@@ -45,16 +50,6 @@ function App(): React.ReactElement {
     }
   }, [playerSettings]);
 
-  const handlePlay = (): void => {
-    setShowLobby(true);
-  };
-
-  const handleLeaveGame = (): void => {
-    setView('menu');
-    setRoomCode(null);
-  };
-
-  const [showLobby, setShowLobby] = useState(false);
 
   return (
     <div className={`min-h-screen ${isDark ? 'dark' : ''}`}>

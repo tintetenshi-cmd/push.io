@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useGameStore } from './useGameStore';
 import type {
@@ -9,6 +9,15 @@ import type {
   GamePhase,
   PhaseStep,
 } from '@roborally/shared';
+
+// Type declaration for import.meta.env
+interface ImportMetaEnv {
+  VITE_SOCKET_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 

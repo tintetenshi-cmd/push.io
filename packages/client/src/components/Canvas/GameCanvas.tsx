@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import type { Room, Player, Cell, Direction } from '@roborally/shared';
+import type { Room, Player, Cell } from '@roborally/shared';
 import { CellType } from '@roborally/shared';
 import { AVATAR_SVGS } from '../../utils/svgAvatars';
 
@@ -208,7 +208,7 @@ function drawCellContent(ctx: CanvasRenderingContext2D, cell: Cell, x: number, y
 function drawRobot(ctx: CanvasRenderingContext2D, player: Player): void {
   if (!player.robot) return;
 
-  const { x, y, direction, color } = player.robot;
+  const { x, y, direction } = player.robot;
   const pixelX = x * CELL_SIZE;
   const pixelY = y * CELL_SIZE;
   const centerX = pixelX + CELL_SIZE / 2;
@@ -219,7 +219,7 @@ function drawRobot(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.translate(centerX, centerY);
   ctx.rotate((direction * Math.PI) / 180);
 
-  ctx.fillStyle = color;
+  ctx.fillStyle = player.color;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, Math.PI * 2);
   ctx.fill();

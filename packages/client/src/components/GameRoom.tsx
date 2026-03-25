@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, Send, MessageSquare, Users } from 'lucide-react';
+import { LogOut, Send, MessageSquare } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import GameCanvas from './Canvas/GameCanvas';
 import CardHand from './CardHand';
@@ -13,7 +13,7 @@ interface GameRoomProps {
 }
 
 export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement {
-  const { room, players, chat, socket, gameState, playerSettings } = useGameStore();
+  const { room, players, socket, gameState, playerSettings, chat } = useGameStore();
   const [message, setMessage] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);

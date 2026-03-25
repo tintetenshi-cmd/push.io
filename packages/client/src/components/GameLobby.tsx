@@ -86,7 +86,7 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
                 style={{ backgroundColor: player.color }}
               >
                 <img
-                  src={AVATAR_SVGS[player.avatar]}
+                  src={AVATAR_SVGS[player.avatar as keyof typeof AVATAR_SVGS]}
                   alt={player.avatar}
                   className="w-8 h-8"
                 />

@@ -4,7 +4,7 @@ import { Check, Power } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 
 export default function ReadyBtn(): React.ReactElement {
-  const { socket, gameState } = useGameStore();
+  const { socket } = useGameStore();
   const [isReady, setIsReady] = useState(false);
   const [powerDown, setPowerDown] = useState(false);
 

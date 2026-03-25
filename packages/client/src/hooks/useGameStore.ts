@@ -57,7 +57,7 @@ const defaultGameState: GameState = {
 
 export const useGameStore = create<GameStore>()(
   persist(
-    (set, get) => ({
+    (set, _get: () => GameStore) => ({
       socket: null,
       isConnected: false,
       room: null,
