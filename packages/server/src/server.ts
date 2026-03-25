@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { RoomManager } from './RoomManager.js';
 import { executePhase, nextTurn } from './GameEngine.js';
 import { sanitizeChatMessage } from './utils.js';
@@ -21,6 +23,9 @@ import type {
   GameUpdate,
 } from '@roborally/shared';
 import { GamePhase, PhaseStep, CardType } from '@roborally/shared';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env['PORT'] || 3001;
 const NODE_ENV = process.env['NODE_ENV'] || 'development';
@@ -337,12 +342,18 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+// Serve static files from client dist
+const clientDistPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientDistPath));
+
+// API routes above the catch-all
 app.get('/', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
-    message: 'RoboRally Server API',
-    endpoints: ['/health', '/api/rooms']
-  });
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
+// Catch-all route to serve index.html for client-side routing
+app.get('*', (_req: Request, res: Response) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
 httpServer.listen(PORT, () => {

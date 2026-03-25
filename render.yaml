@@ -1,9 +1,11 @@
 services:
+  # Single service: Backend + Frontend
   - type: web
-    name: roborally-server
-    runtime: docker
+    name: push-io
+    runtime: node
     plan: free
-    dockerfilePath: ./Dockerfile.prod
+    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter shared build && pnpm --filter client build && pnpm --filter server build
+    startCommand: node packages/server/dist/server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,15 +14,3 @@ services:
     healthCheckPath: /health
     autoDeploy: true
 
-  - type: static
-    name: roborally-client
-    runtime: static
-    buildCommand: npm install -g pnpm && pnpm install && pnpm build
-    staticPublishPath: ./packages/client/dist
-    envVars:
-      - key: NODE_ENV
-        value: production
-    routes:
-      - type: rewrite
-        source: /socket.io/*
-        destination: https://roborally-server.onrender.com/socket.io/*
