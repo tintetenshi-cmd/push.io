@@ -1,4 +1,4 @@
-import type { Cell, Position, Direction, Robot, Room } from '@roborally/shared';
+import { Cell, Position, Direction, Robot, Room } from '@roborally/shared';
 import { CellType, GamePhase, PhaseStep, CardType, CARD_PRIORITIES } from '@roborally/shared';
 
 const WALL_PROBABILITY = 0.20;
@@ -79,7 +79,12 @@ export function generateMap(size: number): Cell[][] {
   if (flagPositions.length > 0) {
     const archiveX = flagPositions[0].x;
     const archiveY = flagPositions[0].y;
-    board[archiveY][archiveX] = { type: CellType.ARCHIVE };
+    if (archiveY !== undefined && archiveY >= 0 && archiveY < board.length) {
+      const row = board[archiveY];
+      if (row && archiveX >= 0 && archiveX < row.length) {
+        row[archiveX] = { type: CellType.ARCHIVE };
+      }
+    }
   }
 
   return board;
@@ -91,8 +96,12 @@ function hasWallCluster(board: Cell[][], x: number, y: number): boolean {
     for (let dx = -1; dx <= 1; dx++) {
       const ny = y + dy;
       const nx = x + dx;
-      if (ny >= 0 && ny < board.length && nx >= 0 && nx < board[0].length) {
-        if (board[ny][nx]?.type === CellType.WALL) wallCount++;
+    if (ny >= 0 && ny < board.length && nx >= 0 && nx < (board[0]?.length ?? 0)) {
+        const row = board[ny];
+        if (row) {
+          const cell = row[nx];
+          if (cell?.type === CellType.WALL) wallCount++;
+        }
       }
     }
   }
@@ -116,8 +125,11 @@ function placeFlags(board: Cell[][], size: number): Position[] {
       const x = Math.floor(Math.random() * (size - 2)) + 1;
       const y = Math.floor(Math.random() * (size - 2)) + 1;
 
-      if (board[y][x].type === CellType.EMPTY && isPathConnected(board, flags, { x, y })) {
-        board[y][x] = { type: flagTypes[i] };
+      const row = board[y];
+      if (!row) continue;
+      const cell = row[x];
+      if (cell && cell.type === CellType.EMPTY && isPathConnected(board, flags, { x, y })) {
+        row[x] = { type: flagTypes[i] };
         flags.push({ x, y });
         placed = true;
       }
@@ -199,9 +211,12 @@ function getNeighbors(board: Cell[][], pos: Position): Position[] {
     const ny = pos.y + dir.y;
 
     if (ny >= 0 && ny < board.length && nx >= 0 && nx < board[0].length) {
-      const cell = board[ny][nx];
-      if (cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
-        neighbors.push({ x: nx, y: ny });
+      const row = board[ny];
+      if (row) {
+        const cell = row[nx];
+        if (cell && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
+          neighbors.push({ x: nx, y: ny });
+        }
       }
     }
   }
@@ -304,7 +319,16 @@ function moveRobot(robot: Robot, distance: number, room: Room): void {
     return;
   }
 
-  const targetCell = room.board[newY][newX];
+  const row = room.board[newY];
+  if (!row) {
+    handleFall(robot, room);
+    return;
+  }
+  const targetCell = row[newX];
+  if (!targetCell) {
+    handleFall(robot, room);
+    return;
+  }
   if (targetCell.type === CellType.WALL) {
     return;
   }
@@ -336,7 +360,16 @@ function pushChain(room: Room, robot: Robot, dx: number, dy: number, depth: numb
     return true;
   }
 
-  const targetCell = room.board[newY][newX];
+  const row = room.board[newY];
+  if (!row) {
+    handleFall(robot, room);
+    return true;
+  }
+  const targetCell = row[newX];
+  if (!targetCell) {
+    handleFall(robot, room);
+    return true;
+  }
   if (targetCell.type === CellType.WALL) {
     return false;
   }
@@ -387,7 +420,10 @@ function executeBoardElements(room: Room): void {
     const robot = player.robot;
     if (!robot || robot.destroyed) continue;
 
-    const cell = room.board[robot.y][robot.x];
+    const row = room.board[robot.y];
+    if (!row) continue;
+    const cell = row[robot.x];
+    if (!cell) continue;
 
     switch (cell.type) {
       case CellType.CONVEYOR_NORMAL:
@@ -434,8 +470,13 @@ function moveConveyor(robot: Robot, direction: Direction, room: Room, speed: num
       return;
     }
 
-    const targetCell = room.board[newY][newX];
-    if (targetCell.type === CellType.WALL) return;
+    const row = room.board[newY];
+    if (!row) {
+      handleFall(robot, room);
+      return;
+    }
+    const targetCell = row[newX];
+    if (!targetCell || targetCell.type === CellType.WALL) return;
 
     const targetRobot = findRobotAt(room, newX, newY);
     if (targetRobot) {
@@ -450,7 +491,16 @@ function moveConveyor(robot: Robot, direction: Direction, room: Room, speed: num
       return;
     }
 
-    const newCell = room.board[robot.y][robot.x];
+    const currentRow = room.board[robot.y];
+    if (!currentRow) {
+      handleFall(robot, room);
+      return;
+    }
+    const newCell = currentRow[robot.x];
+    if (!newCell) {
+      handleFall(robot, room);
+      return;
+    }
     if ((newCell.type === CellType.CONVEYOR_NORMAL || newCell.type === CellType.CONVEYOR_EXPRESS) &&
         newCell.direction !== undefined && newCell.direction !== direction) {
       const turn = (newCell.direction - direction + 360) % 360;
@@ -484,7 +534,10 @@ function fireRobotLaser(robot: Robot, room: Room): void {
   let y = robot.y + dy;
 
   while (x >= 0 && x < room.mapSize && y >= 0 && y < room.mapSize) {
-    const cell = room.board[y][x];
+    const row = room.board[y];
+    if (!row) return;
+    const cell = row[x];
+    if (!cell) return;
     if (cell.type === CellType.WALL) return;
 
     const targetRobot = findRobotAt(room, x, y);
@@ -506,7 +559,10 @@ function fireBoardLaser(x: number, y: number, direction: Direction, count: numbe
   let cy = y + dy;
 
   while (cx >= 0 && cx < room.mapSize && cy >= 0 && cy < room.mapSize) {
-    const cell = room.board[cy][cx];
+    const row = room.board[cy];
+    if (!row) return;
+    const cell = row[cx];
+    if (!cell) return;
     if (cell.type === CellType.WALL) return;
 
     const targetRobot = findRobotAt(room, cx, cy);
@@ -533,7 +589,10 @@ function checkCheckpoints(room: Room): void {
     const robot = player.robot;
     if (!robot || robot.destroyed) continue;
 
-    const cell = room.board[robot.y][robot.x];
+    const row = room.board[robot.y];
+    if (!row) continue;
+    const cell = row[robot.x];
+    if (!cell) continue;
     const flagIndex = flagTypes.indexOf(cell.type);
 
     if (flagIndex !== -1) {

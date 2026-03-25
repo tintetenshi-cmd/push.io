@@ -22,8 +22,8 @@ import type {
 } from '@roborally/shared';
 import { GamePhase, PhaseStep } from '@roborally/shared';
 
-const PORT = process.env.PORT || 3001;
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT = process.env['PORT'] || 3001;
+const NODE_ENV = process.env['NODE_ENV'] || 'development';
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
@@ -51,7 +51,7 @@ const limiter = rateLimit({
 });
 
 app.use(helmet({
-  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false as const,
 }));
 app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
@@ -84,10 +84,9 @@ io.on('connection', (socket) => {
     try {
       const validated = CreateRoomSchema.parse(data);
       const room = roomManager.createRoom(
-        validated.name,
-        validated.mapSize,
-        validated.maxPlayers,
-        socket.id
+        socket.id,
+        socket.id,
+        validated
       );
 
       const player = roomManager.addPlayer(

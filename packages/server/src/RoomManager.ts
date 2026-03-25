@@ -1,11 +1,10 @@
-import type { Room, Player, Robot, ChatMessage, GameState, Cell, Position } from '@roborally/shared';
+import { Room, Player, Robot, ChatMessage, GameState, Cell, Position } from '@roborally/shared';
 import {
   GamePhase,
   Direction,
   CellType,
   CardType,
   CARD_PROBABILITIES,
-  generateId,
 } from '@roborally/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { generateMap } from './GameEngine.js';
@@ -53,10 +52,10 @@ export class RoomManager {
     return code;
   }
 
-  createRoom(name: string, mapSize: number, maxPlayers: number, hostSocketId: string): Room {
+  createRoom(_hostId: string, _hostSocketId: string, data: { name: string; mapSize: number; maxPlayers: number }): Room {
     const id = uuidv4();
     const code = this.generateRoomCode();
-    const board = generateMap(mapSize);
+    const board = generateMap(data.mapSize);
 
     const gameState: GameState = {
       phase: GamePhase.LOBBY,
@@ -69,9 +68,9 @@ export class RoomManager {
     const room: Room = {
       id,
       code,
-      name,
-      mapSize,
-      maxPlayers,
+      name: data.name,
+      mapSize: data.mapSize,
+      maxPlayers: data.maxPlayers,
       players: new Map(),
       gameState,
       board,
@@ -90,14 +89,17 @@ export class RoomManager {
   private extractLasers(board: Cell[][]): { x: number; y: number; direction: Direction; count: number }[] {
     const lasers: { x: number; y: number; direction: Direction; count: number }[] = [];
     for (let y = 0; y < board.length; y++) {
-      for (let x = 0; x < board[y].length; x++) {
-        const cell = board[y][x];
+      const row = board[y];
+      if (!row) continue;
+      for (let x = 0; x < row.length; x++) {
+        const cell = row[x];
+        if (!cell) continue;
         if (cell.type === CellType.LASER && cell.direction !== undefined) {
           const existing = lasers.find(l => l.x === x && l.y === y && l.direction === cell.direction);
           if (existing) {
             existing.count++;
           } else {
-            lasers.push({ x, y, direction: cell.direction!, count: 1 });
+            lasers.push({ x, y, direction: cell.direction, count: 1 });
           }
         }
       }
@@ -208,7 +210,11 @@ export class RoomManager {
           break;
         }
       }
-      if (!occupied && room.board[y][x].type !== CellType.WALL && room.board[y][x].type !== CellType.PIT) {
+      const row = room.board[y];
+      if (!row) continue;
+      const cell = row[x];
+      if (!cell) continue;
+      if (!occupied && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
         return { x, y };
       }
     }
@@ -231,7 +237,7 @@ export class RoomManager {
     }
 
     const remainingPlayers = Array.from(room.players.values());
-    if (remainingPlayers.length > 0 && !remainingPlayers.some(p => p.isHost)) {
+    if (remainingPlayers.length > 0 && !remainingPlayers.some((p: Player) => p.isHost)) {
       remainingPlayers[0].isHost = true;
     }
 
@@ -239,7 +245,7 @@ export class RoomManager {
     return room;
   }
 
-  kickPlayer(roomId: string, playerId: string, reason: string): void {
+  kickPlayer(roomId: string, playerId: string, _reason: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
 
@@ -311,7 +317,7 @@ export class RoomManager {
       let selected: CardType = CardType.FORWARD_1;
 
       for (const [type, prob] of Object.entries(CARD_PROBABILITIES)) {
-        cumulative += prob;
+        cumulative += prob as number;
         if (rand <= cumulative) {
           selected = type as CardType;
           break;
@@ -328,7 +334,7 @@ export class RoomManager {
     player.hand = cards;
   }
 
-  submitProgram(socketId: string, registers: (CardType | null)[], powerDown: boolean): Room | null {
+  submitProgram(socketId: string, registers: ({ id: string; type: CardType; priority: number } | null)[], powerDown: boolean): Room | null {
     const roomId = this.playerRooms.get(socketId);
     if (!roomId) return null;
 
@@ -393,8 +399,4 @@ export class RoomManager {
   getAllRooms(): Room[] {
     return Array.from(this.rooms.values());
   }
-}
-
-function generateId(): string {
-  return uuidv4();
 }

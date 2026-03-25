@@ -2,7 +2,7 @@ import type { Direction, Position, Room, Robot } from '@roborally/shared';
 import { Direction as D } from '@roborally/shared';
 
 export function raycastLOS(
-  room: Room,
+  _room: Room,
   startX: number,
   startY: number,
   direction: Direction,
@@ -17,17 +17,20 @@ export function raycastLOS(
 
   while (
     x >= 0 &&
-    x < room.mapSize &&
+    x < _room.mapSize &&
     y >= 0 &&
-    y < room.mapSize &&
+    y < _room.mapSize &&
     distance <= maxDistance
   ) {
-    const cell = room.board[y][x];
+    const row = _room.board[y];
+    if (!row) return { hit: false, target: null, distance: distance - 1 };
+    const cell = row[x];
+    if (!cell) return { hit: false, target: null, distance: distance - 1 };
     if (cell.type === 'wall') {
       return { hit: true, target: null, distance };
     }
 
-    for (const player of room.players.values()) {
+    for (const player of _room.players.values()) {
       if (player.robot && player.robot.x === x && player.robot.y === y && !player.robot.destroyed) {
         return { hit: true, target: player.robot, distance };
       }
@@ -42,7 +45,7 @@ export function raycastLOS(
 }
 
 export function pushChain(
-  room: Room,
+  _room: Room,
   robot: Robot,
   dx: number,
   dy: number,
@@ -53,16 +56,18 @@ export function pushChain(
   const newX = robot.x + dx;
   const newY = robot.y + dy;
 
-  if (newX < 0 || newX >= room.mapSize || newY < 0 || newY >= room.mapSize) {
+  if (newX < 0 || newX >= _room.mapSize || newY < 0 || newY >= _room.mapSize) {
     return false;
   }
 
-  const cell = room.board[newY][newX];
-  if (cell.type === 'wall') {
+  const row = _room.board[newY];
+  if (!row) return false;
+  const cell = row[newX];
+  if (!cell || cell.type === 'wall') {
     return false;
   }
 
-  for (const player of room.players.values()) {
+  for (const player of _room.players.values()) {
     if (
       player.robot &&
       player.robot !== robot &&
@@ -70,7 +75,7 @@ export function pushChain(
       player.robot.y === newY &&
       !player.robot.destroyed
     ) {
-      if (!pushChain(room, player.robot, dx, dy, depth + 1)) {
+      if (!pushChain(_room, player.robot, dx, dy, depth + 1)) {
         return false;
       }
     }
@@ -80,7 +85,7 @@ export function pushChain(
   robot.y = newY;
 
   if (cell.type === 'pit') {
-    destroyRobot(room, robot);
+    destroyRobot(_room, robot);
   }
 
   return true;
