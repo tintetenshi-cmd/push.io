@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -50,9 +50,14 @@ const limiter = rateLimit({
   keyGenerator: (req) => req.ip || 'unknown',
 });
 
-app.use(helmet({
-  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false as const,
+app.use(cors({
+  origin: NODE_ENV === 'production' ? false : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
 }));
+
+app.use(helmet(
+  NODE_ENV === 'production' ? {} : { contentSecurityPolicy: false }
+));
 app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
 
@@ -77,10 +82,10 @@ function serializeRoom(room: ReturnType<RoomManager['getRoom']>): GameUpdate | n
   };
 }
 
-io.on('connection', (socket) => {
+io.on('connection', (socket: Socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.on('room:create', (data, callback) => {
+  socket.on('room:create', (data: unknown, callback: (result: { success: boolean; room?: GameUpdate; error?: string }) => void) => {
     try {
       const validated = CreateRoomSchema.parse(data);
       const room = roomManager.createRoom(
@@ -103,7 +108,7 @@ io.on('connection', (socket) => {
       }
 
       socket.join(room.id);
-      callback({ success: true, roomCode: room.code });
+      callback({ success: true, room: serializeRoom(room)! });
 
       const update = serializeRoom(room);
       if (update) {
@@ -118,7 +123,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('room:join', (data, callback) => {
+  socket.on('room:join', (data: unknown, callback: (result: { success: boolean; room?: GameUpdate; error?: string }) => void) => {
     try {
       const validated = JoinRoomSchema.parse(data);
       const room = roomManager.getRoomByCode(validated.code);
@@ -142,7 +147,7 @@ io.on('connection', (socket) => {
       }
 
       socket.join(room.id);
-      callback({ success: true, roomId: room.id });
+      callback({ success: true, room: serializeRoom(room)! });
 
       const update = serializeRoom(room);
       if (update) {
@@ -168,7 +173,7 @@ io.on('connection', (socket) => {
     socket.leave(socket.id);
   });
 
-  socket.on('room:ready', (isReady) => {
+  socket.on('room:ready', (isReady: boolean, callback: (result: { success: boolean }) => void) => {
     const room = roomManager.setPlayerReady(socket.id, isReady);
     if (room) {
       const update = serializeRoom(room);
@@ -176,9 +181,10 @@ io.on('connection', (socket) => {
         io.to(room.id).emit('room:update', update);
       }
     }
+    callback({ success: true });
   });
 
-  socket.on('room:start', (callback) => {
+  socket.on('room:start', (callback: (result: { success: boolean; error?: string }) => void) => {
     const room = roomManager.startGame(socket.id);
     if (room) {
       io.to(room.id).emit('game:started');
@@ -192,14 +198,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('game:program', (data) => {
+  socket.on('game:program', (data: unknown) => {
     try {
       const validated = ProgramDataSchema.parse(data);
-      const room = roomManager.submitProgram(
-        socket.id,
-        validated.registers.map(r => r?.type ?? null),
-        validated.powerDown
-      );
+      const registers = validated.registers.map(r => r ? { id: r.id, type: r.type, priority: r.priority } : null);
+      const room = roomManager.submitProgram(socket.id, registers, validated.powerDown);
 
       if (room) {
         const allProgrammed = Array.from(room.players.values()).every(
@@ -221,7 +224,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('chat:send', (message) => {
+  socket.on('chat:send', (message: unknown) => {
     try {
       const validated = ChatMessageSchema.parse({ message });
       const room = roomManager.getPlayerRoom(socket.id);
@@ -330,7 +333,7 @@ function startPhaseResolution(room: ReturnType<RoomManager['getRoom']>): void {
   runNextPhase();
 }
 
-app.get('/health', (_req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 

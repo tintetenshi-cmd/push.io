@@ -1,5 +1,5 @@
 import { Cell, Position, Direction, Robot, Room } from '@roborally/shared';
-import { CellType, GamePhase, PhaseStep, CardType, CARD_PRIORITIES } from '@roborally/shared';
+import { CellType, GamePhase, CardType, CARD_PRIORITIES } from '@roborally/shared';
 
 const WALL_PROBABILITY = 0.20;
 const CONVEYOR_PROBABILITY = 0.15;
@@ -32,7 +32,7 @@ export function generateMap(size: number): Cell[][] {
             const isExpress = Math.random() < 0.5;
             cell = {
               type: isExpress ? CellType.CONVEYOR_EXPRESS : CellType.CONVEYOR_NORMAL,
-              direction: directions[Math.floor(Math.random() * directions.length)],
+              direction: directions[Math.floor(Math.random() * directions.length)] as Direction,
             };
           } else {
             cumulative += LASER_PROBABILITY;
@@ -40,7 +40,7 @@ export function generateMap(size: number): Cell[][] {
               const directions = [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST];
               cell = {
                 type: CellType.LASER,
-                direction: directions[Math.floor(Math.random() * directions.length)],
+                direction: directions[Math.floor(Math.random() * directions.length)] as Direction,
               };
             } else {
               cumulative += GEAR_PROBABILITY;
@@ -76,10 +76,11 @@ export function generateMap(size: number): Cell[][] {
   }
 
   const flagPositions = placeFlags(board, size);
-  if (flagPositions.length > 0) {
-    const archiveX = flagPositions[0].x;
-    const archiveY = flagPositions[0].y;
-    if (archiveY !== undefined && archiveY >= 0 && archiveY < board.length) {
+  const firstPos = flagPositions[0];
+  if (firstPos) {
+    const archiveX = firstPos.x;
+    const archiveY = firstPos.y;
+    if (archiveY >= 0 && archiveY < board.length) {
       const row = board[archiveY];
       if (row && archiveX >= 0 && archiveX < row.length) {
         row[archiveX] = { type: CellType.ARCHIVE };
@@ -96,7 +97,7 @@ function hasWallCluster(board: Cell[][], x: number, y: number): boolean {
     for (let dx = -1; dx <= 1; dx++) {
       const ny = y + dy;
       const nx = x + dx;
-    if (ny >= 0 && ny < board.length && nx >= 0 && nx < (board[0]?.length ?? 0)) {
+    if (ny >= 0 && ny < board.length && nx >= 0 && nx < board[0].length) {
         const row = board[ny];
         if (row) {
           const cell = row[nx];
@@ -400,7 +401,7 @@ function findRobotAt(room: Room, x: number, y: number): Robot | null {
   return null;
 }
 
-function handleFall(robot: Robot, room: Room): void {
+function handleFall(robot: Robot, _room: Room): void {
   robot.lives--;
   robot.damage = 0;
   robot.destroyed = true;
