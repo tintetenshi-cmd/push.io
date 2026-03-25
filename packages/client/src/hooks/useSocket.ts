@@ -10,7 +10,7 @@ import type {
   PhaseStep,
 } from '@roborally/shared';
 
-const SOCKET_URL = (import.meta as unknown as { env: { VITE_SOCKET_URL?: string } }).env.VITE_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = ''; // Empty = same origin (works when frontend & backend served together)
 
 export function useSocket(): {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;

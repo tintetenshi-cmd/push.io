@@ -60,9 +60,7 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(helmet(
-  NODE_ENV === 'production' ? {} : { contentSecurityPolicy: false }
-));
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
 
