@@ -20,7 +20,7 @@ import type {
   ClientToServerEvents,
   GameUpdate,
 } from '@roborally/shared';
-import { GamePhase, PhaseStep } from '@roborally/shared';
+import { GamePhase, PhaseStep, CardType } from '@roborally/shared';
 
 const PORT = process.env['PORT'] || 3001;
 const NODE_ENV = process.env['NODE_ENV'] || 'development';

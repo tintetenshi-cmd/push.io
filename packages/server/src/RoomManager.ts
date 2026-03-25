@@ -1,4 +1,4 @@
-import { Room, Player, Robot, ChatMessage, GameState, Cell, Position } from '@roborally/shared';
+import { Room, Player, ChatMessage, GameState, Cell, Position } from '@roborally/shared';
 import {
   GamePhase,
   Direction,
