@@ -201,7 +201,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('game:program', (data: unknown) => {
     try {
       const validated = ProgramDataSchema.parse(data);
-      const registers = validated.registers.map(r => r ? { id: r.id, type: r.type, priority: r.priority } : null);
+      const registers = validated.registers.map(r => r ? { id: r.id, type: r.type as CardType, priority: r.priority } : null);
       const room = roomManager.submitProgram(socket.id, registers, validated.powerDown);
 
       if (room) {
@@ -307,7 +307,7 @@ function startPhaseResolution(room: ReturnType<RoomManager['getRoom']>): void {
         return;
       }
 
-      const step = phaseSteps[stepIndex];
+      const step = phaseSteps[stepIndex]!;
       io.to(room.id).emit('game:phaseUpdate', step, 0);
 
       if (step === PhaseStep.MOVE_ROBOTS) {

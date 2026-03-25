@@ -238,7 +238,10 @@ export class RoomManager {
 
     const remainingPlayers = Array.from(room.players.values());
     if (remainingPlayers.length > 0 && !remainingPlayers.some((p: Player) => p.isHost)) {
-      remainingPlayers[0].isHost = true;
+      const firstPlayer = remainingPlayers[0];
+      if (firstPlayer) {
+        firstPlayer.isHost = true;
+      }
     }
 
     room.lastActivity = Date.now();

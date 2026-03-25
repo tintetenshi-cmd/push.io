@@ -91,7 +91,7 @@ export function pushChain(
   return true;
 }
 
-export function destroyRobot(room: Room, robot: Robot): void {
+export function destroyRobot(_room: Room, robot: Robot): void {
   robot.lives--;
   robot.damage = 0;
   robot.destroyed = true;

@@ -57,7 +57,8 @@ export function generateMap(size: number): Cell[][] {
                     CellType.PUSHER_EAST,
                     CellType.PUSHER_WEST,
                   ];
-                  cell = { type: pusherTypes[Math.floor(Math.random() * pusherTypes.length)] };
+                  const pusherType = pusherTypes[Math.floor(Math.random() * pusherTypes.length)];
+                  cell = { type: pusherType! };
                 } else {
                   cumulative += PIT_PROBABILITY;
                   if (rand < cumulative) {
@@ -97,7 +98,8 @@ function hasWallCluster(board: Cell[][], x: number, y: number): boolean {
     for (let dx = -1; dx <= 1; dx++) {
       const ny = y + dy;
       const nx = x + dx;
-    if (ny >= 0 && ny < board.length && nx >= 0 && nx < board[0].length) {
+      const firstRow = board[0];
+      if (ny >= 0 && ny < board.length && nx >= 0 && nx < (firstRow?.length ?? 0)) {
         const row = board[ny];
         if (row) {
           const cell = row[nx];
@@ -130,7 +132,10 @@ function placeFlags(board: Cell[][], size: number): Position[] {
       if (!row) continue;
       const cell = row[x];
       if (cell && cell.type === CellType.EMPTY && isPathConnected(board, flags, { x, y })) {
-        row[x] = { type: flagTypes[i] };
+      const flagType = flagTypes[i];
+      if (flagType) {
+        row[x] = { type: flagType };
+      }
         flags.push({ x, y });
         placed = true;
       }
@@ -144,7 +149,7 @@ function placeFlags(board: Cell[][], size: number): Position[] {
 function isPathConnected(board: Cell[][], existingFlags: Position[], newPos: Position): boolean {
   if (existingFlags.length === 0) return true;
 
-  const lastFlag = existingFlags[existingFlags.length - 1];
+  const lastFlag = existingFlags[existingFlags.length - 1]!;
   return aStar(board, lastFlag, newPos) !== null;
 }
 
@@ -158,7 +163,7 @@ function aStar(board: Cell[][], start: Position, goal: Position): Position[] | n
   fScore.set(`${start.x},${start.y}`, heuristic(start, goal));
 
   while (openSet.length > 0) {
-    let current = openSet[0];
+    let current: Position = openSet[0]!;
     let lowestF = fScore.get(`${current.x},${current.y}`) ?? Infinity;
 
     for (const pos of openSet) {
@@ -169,18 +174,18 @@ function aStar(board: Cell[][], start: Position, goal: Position): Position[] | n
       }
     }
 
-    if (current.x === goal.x && current.y === goal.y) {
-      return reconstructPath(cameFrom, current);
+    if (current!.x === goal.x && current!.y === goal.y) {
+      return reconstructPath(cameFrom, current!);
     }
 
-    openSet.splice(openSet.indexOf(current), 1);
+    openSet.splice(openSet.indexOf(current!), 1);
 
     for (const neighbor of getNeighbors(board, current)) {
       const tentativeG = (gScore.get(`${current.x},${current.y}`) ?? Infinity) + 1;
       const neighborKey = `${neighbor.x},${neighbor.y}`;
 
       if (tentativeG < (gScore.get(neighborKey) ?? Infinity)) {
-        cameFrom.set(neighborKey, current);
+        cameFrom.set(neighborKey, current!);
         gScore.set(neighborKey, tentativeG);
         fScore.set(neighborKey, tentativeG + heuristic(neighbor, goal));
 
@@ -211,7 +216,8 @@ function getNeighbors(board: Cell[][], pos: Position): Position[] {
     const nx = pos.x + dir.x;
     const ny = pos.y + dir.y;
 
-    if (ny >= 0 && ny < board.length && nx >= 0 && nx < board[0].length) {
+    const firstRow = board[0];
+    if (ny >= 0 && ny < board.length && nx >= 0 && nx < (firstRow?.length ?? 0)) {
       const row = board[ny];
       if (row) {
         const cell = row[nx];
@@ -598,7 +604,7 @@ function checkCheckpoints(room: Room): void {
 
     if (flagIndex !== -1) {
       const flagNumber = flagIndex + 1;
-      const lastFlag = robot.flagsTouched.length > 0 ? robot.flagsTouched[robot.flagsTouched.length - 1] : 0;
+      const lastFlag = robot.flagsTouched.length > 0 ? robot.flagsTouched[robot.flagsTouched.length - 1]! : 0;
 
       if (flagNumber === lastFlag + 1 && !robot.flagsTouched.includes(flagNumber)) {
         robot.flagsTouched.push(flagNumber);
