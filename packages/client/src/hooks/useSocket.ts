@@ -10,16 +10,7 @@ import type {
   PhaseStep,
 } from '@roborally/shared';
 
-// Type declaration for import.meta.env
-interface ImportMetaEnv {
-  VITE_SOCKET_URL?: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = (import.meta as unknown as { env: { VITE_SOCKET_URL?: string } }).env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 export function useSocket(): {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
