@@ -160,6 +160,7 @@ export class RoomManager {
       color,
       isHost,
       isReady: false,
+      isAI: false,
       robot: isHost && spawnPos
         ? {
             id: uuidv4(),
@@ -398,14 +399,14 @@ export class RoomManager {
     return room;
   }
 
-  getAIProgram(player: Player, room: Room): (Card | null)[] {
+  getAIProgram(player: Player, room: Room): ({ id: string; type: CardType; priority: number } | null)[] {
     if (!player.isAI) return player.registers;
     return aiPlayerManager.chooseCards(player, room);
   }
 
   submitProgram(
     socketId: string,
-    registers: (Card | null)[],
+    registers: ({ id: string; type: CardType; priority: number } | null)[],
     powerDown: boolean
   ): Room | null {
     const roomId = this.playerRooms.get(socketId);

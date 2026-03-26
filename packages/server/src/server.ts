@@ -239,6 +239,11 @@ io.on('connection', (socket: Socket) => {
     }
 
     const aiName = aiPlayerManager.generateAIName();
+    if (!aiName) {
+      callback({ success: false, error: 'No AI names available' });
+      return;
+    }
+
     const colors = ['#FF4444', '#44FF44', '#4444FF', '#FFFF44', '#FF44FF', '#44FFFF', '#FFAA00', '#AAFF00'];
     const avatars = ['tank', 'wheelbot', 'flybot', 'hovercraft', 'rollerbot'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -360,9 +365,9 @@ io.on('connection', (socket: Socket) => {
       }
     }
   });
-});
 
-function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
+  // AI turn processing function - called when game starts or during programming phase
+  function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
   if (!room) return;
 
   const aiPlayers = Array.from(room.players.values()).filter(p => p.isAI);

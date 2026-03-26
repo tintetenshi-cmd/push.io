@@ -96,8 +96,9 @@ export class AIPlayerManager {
     let registersFilled = 0;
     for (let i = 0; i < 5 && registersFilled < filledRegisters; i++) {
       if (!player.robot.lockedRegisters[i] && availableCards.length > 0) {
-        const cardIndex = this.selectCardIndex(availableCards, difficulty, room, player.robot, i);
-        registers[i] = availableCards[cardIndex];
+        const cardIndex = this.selectCardIndex(availableCards, difficulty, room, player.robot!, i);
+        const card = availableCards[cardIndex]!;
+        registers[i] = card;
         availableCards.splice(cardIndex, 1);
         registersFilled++;
       }
@@ -191,7 +192,8 @@ export class AIPlayerManager {
     let bestScore = -Infinity;
 
     for (let i = 0; i < cards.length; i++) {
-      const score = this.evaluateCard(cards[i], room, robot, registerIndex);
+      const card = cards[i]!;
+      const score = this.evaluateCard(card, room, robot, registerIndex);
       if (score > bestScore) {
         bestScore = score;
         bestIndex = i;
@@ -214,7 +216,9 @@ export class AIPlayerManager {
     // Simulate move
     let newX = robot.x;
     let newY = robot.y;
-    let newDir = robot.direction;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let newDir = robot.direction; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     switch (card.type) {
       case CardType.FORWARD_1:
