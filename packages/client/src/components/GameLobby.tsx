@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Play, Check, X, Crown } from 'lucide-react';
+import { ArrowLeft, Users, Play, Check, X, Crown, Bot, Plus, Trash2 } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import { AVATAR_SVGS } from '../utils/svgAvatars';
+import type { Difficulty } from '@roborally/shared';
 
 interface GameLobbyProps {
   onBack: () => void;
@@ -12,10 +13,14 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
   const { room, players, socket, playerSettings } = useGameStore();
   const [isReady, setIsReady] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [addingBot, setAddingBot] = useState(false);
 
   const currentPlayer = players.find((p) => p.name === playerSettings.name);
   const isHost = currentPlayer?.isHost ?? false;
-  const allReady = players.length >= 2 && players.every((p) => p.isReady);
+  const humanPlayers = players.filter((p) => !p.isAI);
+  const aiPlayers = players.filter((p) => p.isAI);
+  const allReady = humanPlayers.length >= 1 && humanPlayers.every((p) => p.isReady);
+  const canAddBot = isHost && players.length < (room?.maxPlayers ?? 8);
 
   const handleReady = (): void => {
     if (!socket) return;
@@ -39,6 +44,26 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
     if (!socket) return;
     socket.emit('room:leave');
     onBack();
+  };
+
+  const handleAddBot = (difficulty: Difficulty): void => {
+    if (!socket || !isHost) return;
+    setAddingBot(true);
+    socket.emit('room:addBot', { difficulty }, (result: { success: boolean; error?: string }) => {
+      setAddingBot(false);
+      if (!result.success) {
+        alert(result.error || 'Failed to add bot');
+      }
+    });
+  };
+
+  const handleRemoveBot = (playerId: string): void => {
+    if (!socket || !isHost) return;
+    socket.emit('room:removeBot', { playerId }, (result: { success: boolean; error?: string }) => {
+      if (!result.success) {
+        alert(result.error || 'Failed to remove bot');
+      }
+    });
   };
 
   if (!room) {
@@ -68,6 +93,38 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
           {players.length}/{room.maxPlayers}
         </div>
       </div>
+
+      {isHost && canAddBot && (
+        <div className="mb-4 p-4 bg-primary-800/50 rounded-xl">
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Bot className="w-4 h-4 text-purple-400" />
+            Ajouter un bot IA
+          </h4>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAddBot('easy')}
+              disabled={addingBot}
+              className="flex-1 py-2 px-3 rounded-lg bg-green-600/50 hover:bg-green-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
+            >
+              Facile
+            </button>
+            <button
+              onClick={() => handleAddBot('medium')}
+              disabled={addingBot}
+              className="flex-1 py-2 px-3 rounded-lg bg-yellow-600/50 hover:bg-yellow-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
+            >
+              Moyen
+            </button>
+            <button
+              onClick={() => handleAddBot('hard')}
+              disabled={addingBot}
+              className="flex-1 py-2 px-3 rounded-lg bg-red-600/50 hover:bg-red-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
+            >
+              Difficile
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 bg-primary-900/30 rounded-xl p-4 mb-4 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-4">Joueurs ({players.length})</h3>
@@ -99,6 +156,12 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
                   {player.isHost && (
                     <Crown className="w-4 h-4 text-yellow-400" />
                   )}
+                  {player.isAI && (
+                    <span className="text-xs bg-purple-600 px-2 py-0.5 rounded-full text-white flex items-center gap-1">
+                      <Bot className="w-3 h-3" />
+                      {player.difficulty}
+                    </span>
+                  )}
                 </div>
                 {player.robot && (
                   <div className="text-sm text-primary-400">
@@ -107,7 +170,9 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {player.isReady ? (
+                {player.isAI ? (
+                  <span className="text-purple-400 text-sm font-medium">IA</span>
+                ) : player.isReady ? (
                   <span className="flex items-center gap-1 text-green-400">
                     <Check className="w-4 h-4" />
                     Prêt
@@ -117,6 +182,15 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
                     <X className="w-4 h-4" />
                     En attente
                   </span>
+                )}
+                {isHost && player.isAI && (
+                  <button
+                    onClick={() => handleRemoveBot(player.id)}
+                    className="p-1 rounded hover:bg-red-600/50 text-red-400 hover:text-red-300 transition-colors"
+                    title="Retirer le bot"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
             </motion.div>

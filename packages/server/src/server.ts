@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { RoomManager } from './RoomManager.js';
 import { executePhase, nextTurn } from './GameEngine.js';
 import { sanitizeChatMessage } from './utils.js';
+import { aiPlayerManager } from './AIPlayerManager.js';
 import {
   CreateRoomSchema,
   JoinRoomSchema,
@@ -22,7 +23,7 @@ import type {
   ClientToServerEvents,
   GameUpdate,
 } from '@roborally/shared';
-import { GamePhase, PhaseStep, CardType } from '@roborally/shared';
+import { GamePhase, PhaseStep, CardType, Difficulty } from '@roborally/shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -218,6 +219,77 @@ io.on('connection', (socket: Socket) => {
     }
   });
 
+  socket.on('room:addBot', (data: { difficulty: Difficulty }, callback: (result: { success: boolean; error?: string }) => void) => {
+    const room = roomManager.getPlayerRoom(socket.id);
+    if (!room) {
+      callback({ success: false, error: 'Not in a room' });
+      return;
+    }
+
+    const player = room.players.get(socket.id);
+    if (!player?.isHost) {
+      callback({ success: false, error: 'Only host can add bots' });
+      return;
+    }
+
+    if (room.players.size >= room.maxPlayers) {
+      callback({ success: false, error: 'Room is full' });
+      return;
+    }
+
+    const aiName = aiPlayerManager.generateAIName();
+    const colors = ['#FF4444', '#44FF44', '#4444FF', '#FFFF44', '#FF44FF', '#44FFFF', '#FFAA00', '#AAFF00'];
+    const avatars = ['tank', 'wheelbot', 'flybot', 'hovercraft', 'rollerbot'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+    const bot = roomManager.addAIPlayer(
+      room.id,
+      aiName,
+      randomAvatar,
+      randomColor,
+      data.difficulty
+    );
+
+    if (bot) {
+      const update = serializeRoom(room);
+      if (update) {
+        io.to(room.id).emit('room:update', update);
+      }
+      callback({ success: true });
+    } else {
+      callback({ success: false, error: 'Failed to add bot' });
+    }
+  });
+
+  socket.on('room:removeBot', (data: { playerId: string }, callback: (result: { success: boolean; error?: string }) => void) => {
+    const room = roomManager.getPlayerRoom(socket.id);
+    if (!room) {
+      callback({ success: false, error: 'Not in a room' });
+      return;
+    }
+
+    const player = room.players.get(socket.id);
+    if (!player?.isHost) {
+      callback({ success: false, error: 'Only host can remove bots' });
+      return;
+    }
+
+    const targetPlayer = room.players.get(data.playerId);
+    if (!targetPlayer?.isAI) {
+      callback({ success: false, error: 'Player is not a bot' });
+      return;
+    }
+
+    roomManager.removeAIPlayer(room.id, data.playerId);
+
+    const update = serializeRoom(room);
+    if (update) {
+      io.to(room.id).emit('room:update', update);
+    }
+    callback({ success: true });
+  });
+
   socket.on('game:program', (data: unknown) => {
     try {
       const validated = ProgramDataSchema.parse(data);
@@ -289,7 +361,33 @@ io.on('connection', (socket: Socket) => {
   });
 });
 
-function startPhaseResolution(room: ReturnType<RoomManager['getRoom']>): void {
+function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
+  if (!room) return;
+
+  const aiPlayers = Array.from(room.players.values()).filter(p => p.isAI);
+
+  for (const player of aiPlayers) {
+    if (!player.robot?.powerDown) {
+      const aiRegisters = roomManager.getAIProgram(player, room);
+      roomManager.submitProgram(player.socketId, aiRegisters, false);
+    }
+  }
+
+  // Check if all players have programmed
+  const allProgrammed = Array.from(room.players.values()).every(
+    p => p.registers.every(r => r !== null) || (p.robot?.powerDown ?? false)
+  );
+
+  if (allProgrammed && room.gameState.phase === GamePhase.PROGRAMMING) {
+    room.gameState.phase = GamePhase.RESOLUTION;
+    startPhaseResolution(room);
+  }
+
+  const update = serializeRoom(room);
+  if (update) {
+    io.to(room.id).emit('room:update', update);
+  }
+}
   if (!room) return;
 
   let currentRegister = 0;

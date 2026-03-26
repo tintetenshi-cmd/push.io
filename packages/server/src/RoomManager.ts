@@ -5,9 +5,11 @@ import {
   CellType,
   CardType,
   CARD_PROBABILITIES,
+  Difficulty,
 } from '@roborally/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { generateMap } from './GameEngine.js';
+import { aiPlayerManager } from './AIPlayerManager.js';
 
 const ROOM_CLEANUP_INTERVAL = 60000;
 const ROOM_MAX_AGE = 3600000;
@@ -349,7 +351,63 @@ export class RoomManager {
     player.hand = cards;
   }
 
-  submitProgram(socketId: string, registers: ({ id: string; type: CardType; priority: number } | null)[], powerDown: boolean): Room | null {
+  addAIPlayer(
+    roomId: string,
+    name: string,
+    avatar: string,
+    color: string,
+    difficulty: Difficulty
+  ): Player | null {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+    if (room.players.size >= room.maxPlayers) return null;
+    if (room.gameState.phase !== GamePhase.LOBBY) return null;
+
+    const aiSocketId = `ai-${uuidv4()}`;
+    const spawnPos = this.findSpawnPosition(room);
+
+    const player = aiPlayerManager.createAIPlayer(
+      aiSocketId,
+      name,
+      avatar,
+      color,
+      difficulty,
+      false,
+      spawnPos
+    );
+
+    room.players.set(aiSocketId, player);
+    this.playerRooms.set(aiSocketId, roomId);
+    room.lastActivity = Date.now();
+
+    return player;
+  }
+
+  removeAIPlayer(roomId: string, playerId: string): Room | null {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+
+    const player = room.players.get(playerId);
+    if (!player || !player.isAI) return null;
+
+    aiPlayerManager.releaseAIName(player.name);
+    room.players.delete(playerId);
+    this.playerRooms.delete(playerId);
+
+    room.lastActivity = Date.now();
+    return room;
+  }
+
+  getAIProgram(player: Player, room: Room): (Card | null)[] {
+    if (!player.isAI) return player.registers;
+    return aiPlayerManager.chooseCards(player, room);
+  }
+
+  submitProgram(
+    socketId: string,
+    registers: (Card | null)[],
+    powerDown: boolean
+  ): Room | null {
     const roomId = this.playerRooms.get(socketId);
     if (!roomId) return null;
 

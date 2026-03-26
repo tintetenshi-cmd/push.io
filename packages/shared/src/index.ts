@@ -90,6 +90,12 @@ export interface Robot {
   destroyed: boolean;
 }
 
+export enum Difficulty {
+  EASY = 'easy',
+  MEDIUM = 'medium',
+  HARD = 'hard',
+}
+
 export interface Player {
   id: string;
   socketId: string;
@@ -98,6 +104,8 @@ export interface Player {
   color: string;
   isHost: boolean;
   isReady: boolean;
+  isAI: boolean;
+  difficulty?: Difficulty;
   robot: Robot | null;
   hand: Card[];
   registers: (Card | null)[];
@@ -242,6 +250,8 @@ export interface ClientToServerEvents {
   'room:leave': () => void;
   'room:ready': (isReady: boolean) => void;
   'room:start': (callback: (result: { success: boolean; error?: string }) => void) => void;
+  'room:addBot': (data: { difficulty: Difficulty }, callback: (result: { success: boolean; error?: string }) => void) => void;
+  'room:removeBot': (data: { playerId: string }, callback: (result: { success: boolean; error?: string }) => void) => void;
   'game:program': (data: ProgramData) => void;
   'chat:send': (message: string) => void;
   'player:ping': () => void;
