@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Play, Check, X, Crown, Bot, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users, Play, Check, X, Crown, Bot, Trash2 } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import { AVATAR_SVGS } from '../utils/svgAvatars';
-import type { Difficulty } from '@roborally/shared';
+import { Difficulty } from '@roborally/shared';
 
 interface GameLobbyProps {
   onBack: () => void;
@@ -18,7 +18,6 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
   const currentPlayer = players.find((p) => p.name === playerSettings.name);
   const isHost = currentPlayer?.isHost ?? false;
   const humanPlayers = players.filter((p) => !p.isAI);
-  const aiPlayers = players.filter((p) => p.isAI);
   const allReady = humanPlayers.length >= 1 && humanPlayers.every((p) => p.isReady);
   const canAddBot = isHost && players.length < (room?.maxPlayers ?? 8);
 
@@ -102,21 +101,21 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
           </h4>
           <div className="flex gap-2">
             <button
-              onClick={() => handleAddBot('easy')}
+              onClick={() => handleAddBot(Difficulty.EASY)}
               disabled={addingBot}
               className="flex-1 py-2 px-3 rounded-lg bg-green-600/50 hover:bg-green-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
               Facile
             </button>
             <button
-              onClick={() => handleAddBot('medium')}
+              onClick={() => handleAddBot(Difficulty.MEDIUM)}
               disabled={addingBot}
               className="flex-1 py-2 px-3 rounded-lg bg-yellow-600/50 hover:bg-yellow-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
               Moyen
             </button>
             <button
-              onClick={() => handleAddBot('hard')}
+              onClick={() => handleAddBot(Difficulty.HARD)}
               disabled={addingBot}
               className="flex-1 py-2 px-3 rounded-lg bg-red-600/50 hover:bg-red-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
