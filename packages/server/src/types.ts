@@ -14,8 +14,8 @@ export const PlayerSettingsSchema = z.object({
 
 export const CreateRoomSchema = z.object({
   name: z.string().min(1).max(20),
-  mapSize: z.enum(MAP_SIZE_OPTIONS.map(String) as [string, ...string[]]).transform(Number),
-  maxPlayers: z.enum(MAX_PLAYERS_OPTIONS.map(String) as [string, ...string[]]).transform(Number),
+  mapSize: z.union([z.enum(MAP_SIZE_OPTIONS.map(String) as [string, ...string[]]), z.number()]).transform(Number),
+  maxPlayers: z.union([z.enum(MAX_PLAYERS_OPTIONS.map(String) as [string, ...string[]]), z.number()]).transform(Number),
 });
 
 export const JoinRoomSchema = z.object({
