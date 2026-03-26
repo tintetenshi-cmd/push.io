@@ -100,13 +100,16 @@ io.on('connection', (socket: Socket) => {
   console.log(`Client connected: ${socket.id}`);
 
   socket.on('room:create', (data: unknown, callback: (result: { success: boolean; room?: GameUpdate; error?: string }) => void) => {
+    console.log('room:create received data:', data);
     try {
       const validated = CreateRoomSchema.parse(data);
+      console.log('room:create validated:', validated);
       const room = roomManager.createRoom(
         socket.id,
         socket.id,
         validated
       );
+      console.log('room:create room created:', room?.id);
 
       const player = roomManager.addPlayer(
         room.id,
@@ -115,6 +118,7 @@ io.on('connection', (socket: Socket) => {
         'tank',
         '#FF4444'
       );
+      console.log('room:create player result:', !!player);
 
       if (!player) {
         callback({ success: false, error: 'Failed to join room' });
@@ -122,13 +126,16 @@ io.on('connection', (socket: Socket) => {
       }
 
       socket.join(room.id);
-      callback({ success: true, room: serializeRoom(room)! });
+      const serialized = serializeRoom(room);
+      console.log('room:create serialized:', !!serialized);
+      callback({ success: true, room: serialized! });
 
       const update = serializeRoom(room);
       if (update) {
         io.to(room.id).emit('room:update', update);
       }
     } catch (error) {
+      console.error('room:create error:', error);
       if (error instanceof Error) {
         callback({ success: false, error: error.message });
       } else {
