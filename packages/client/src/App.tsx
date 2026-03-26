@@ -19,18 +19,17 @@ function App(): React.ReactElement {
   const { isConnected, gameState } = useSocket();
   const { playerSettings, setRoomCode } = useGameStore();
 
+  // Switch to game view when game starts
+  useEffect(() => {
+    if (gameState.phase !== 'lobby' && view === 'lobby') {
+      setView('game');
+    }
+  }, [gameState.phase, view]);
+
   const handleLeaveGame = (): void => {
     setView('menu');
     setRoomCode(null);
   };
-
-  useEffect(() => {
-    if (gameState.phase === 'lobby') {
-      setView('lobby');
-    } else if (gameState.phase === 'programming' || gameState.phase === 'resolution') {
-      setView('game');
-    }
-  }, [gameState.phase]);
 
   useEffect(() => {
     const saved = localStorage.getItem('roborally_settings');
