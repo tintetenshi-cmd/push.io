@@ -99,7 +99,7 @@ function serializeRoom(room: ReturnType<RoomManager['getRoom']>): GameUpdate | n
 io.on('connection', (socket: Socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.on('room:create', (data: unknown, callback: (result: { success: boolean; room?: GameUpdate; error?: string }) => void) => {
+  socket.on('room:create', (data: unknown, callback: (result: { success: boolean; roomCode?: string; error?: string }) => void) => {
     console.log('room:create received data:', data);
     try {
       const validated = CreateRoomSchema.parse(data);
