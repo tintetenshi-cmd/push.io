@@ -35,10 +35,10 @@ export default function MenuPrincipal({ onClose, onCreateRoom, onJoinRoom }: Men
     socket.emit(
       'room:create',
       { name: roomName, mapSize, maxPlayers },
-      (result: { success: boolean; room?: { code: string }; error?: string }) => {
+      (result: { success: boolean; roomCode?: string; error?: string }) => {
         setIsLoading(false);
-        if (result.success && result.room?.code) {
-          onCreateRoom(result.room.code);
+        if (result.success && result.roomCode) {
+          onCreateRoom(result.roomCode);
         } else {
           alert(result.error || 'Failed to create room');
         }

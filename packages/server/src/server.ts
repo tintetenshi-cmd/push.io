@@ -126,9 +126,8 @@ io.on('connection', (socket: Socket) => {
       }
 
       socket.join(room.id);
-      const serialized = serializeRoom(room);
-      console.log('room:create serialized:', !!serialized);
-      callback({ success: true, room: serialized! });
+      console.log('room:create callback:', { success: true, roomCode: room.code });
+      callback({ success: true, roomCode: room.code });
 
       const update = serializeRoom(room);
       if (update) {
