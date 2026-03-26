@@ -22,6 +22,7 @@ import type {
   ServerToClientEvents,
   ClientToServerEvents,
   GameUpdate,
+  Room,
 } from '@roborally/shared';
 import { GamePhase, PhaseStep, CardType, Difficulty } from '@roborally/shared';
 
@@ -388,6 +389,8 @@ function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
     io.to(room.id).emit('room:update', update);
   }
 }
+
+function startPhaseResolution(room: Room): void {
   if (!room) return;
 
   let currentRegister = 0;
