@@ -131,9 +131,21 @@ export class RoomManager {
 
   addPlayer(roomId: string, socketId: string, name: string, avatar: string, color: string): Player | null {
     const room = this.rooms.get(roomId);
+    console.log('addPlayer debug:', {
+      roomExists: !!room,
+      roomId,
+      playersSize: room?.players.size,
+      maxPlayers: room?.maxPlayers,
+      phase: room?.gameState.phase,
+      expectedPhase: GamePhase.LOBBY,
+      phaseMatch: room?.gameState.phase === GamePhase.LOBBY
+    });
     if (!room) return null;
     if (room.players.size >= room.maxPlayers) return null;
-    if (room.gameState.phase !== GamePhase.LOBBY) return null;
+    if (room.gameState.phase !== GamePhase.LOBBY) {
+      console.log('addPlayer rejected: wrong phase', room.gameState.phase, '!==', GamePhase.LOBBY);
+      return null;
+    }
 
     const isHost = room.players.size === 0;
     const spawnPos = this.findSpawnPosition(room);
