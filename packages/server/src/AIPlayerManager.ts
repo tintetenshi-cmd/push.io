@@ -217,8 +217,7 @@ export class AIPlayerManager {
     let newX = robot.x;
     let newY = robot.y;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let newDir = robot.direction; // eslint-disable-line @typescript-eslint/no-unused-vars
+    let newDir = robot.direction;
 
     switch (card.type) {
       case CardType.FORWARD_1:

@@ -251,9 +251,9 @@ io.on('connection', (socket: Socket) => {
 
     const bot = roomManager.addAIPlayer(
       room.id,
-      aiName,
-      randomAvatar,
-      randomColor,
+      aiName!,
+      randomAvatar!,
+      randomColor!,
       data.difficulty
     );
 
@@ -367,6 +367,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   // AI turn processing function - called when game starts or during programming phase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
   if (!room) return;
 
