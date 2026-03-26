@@ -394,6 +394,7 @@ io.on('connection', (socket: Socket) => {
     io.to(room.id).emit('room:update', update);
   }
 }
+});
 
 function startPhaseResolution(room: Room): void {
   if (!room) return;
