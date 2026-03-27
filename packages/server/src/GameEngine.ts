@@ -1,4 +1,4 @@
-import { Cell, Position, Direction, Robot, Room } from '@roborally/shared';
+import { Cell, Position, Direction, Robot, Room, Player } from '@roborally/shared';
 import { CellType, GamePhase, CardType, CARD_PRIORITIES } from '@roborally/shared';
 
 const WALL_PROBABILITY = 0.20;
@@ -662,7 +662,7 @@ function cleanupPhase(room: Room): void {
   }
 }
 
-export function nextTurn(room: Room): void {
+export function nextTurn(room: Room, dealCardsFn?: (player: Player) => void): void {
   room.gameState.turnNumber++;
   room.gameState.currentRegister = 0;
   room.gameState.currentPhaseStep = null;
@@ -674,6 +674,11 @@ export function nextTurn(room: Room): void {
 
     if (player.robot && !player.robot.destroyed) {
       player.robot.powerDown = false;
+    }
+
+    // Redistribute cards for next turn
+    if (dealCardsFn && player.robot) {
+      dealCardsFn(player);
     }
   }
 }

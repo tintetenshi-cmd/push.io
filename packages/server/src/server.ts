@@ -416,7 +416,7 @@ function startPhaseResolution(room: Room): void {
   const runNextPhase = () => {
     if (!room) return;
     if (currentRegister >= 5) {
-      nextTurn(room);
+      nextTurn(room, roomManager.dealCards.bind(roomManager));
       const update = serializeRoom(room);
       if (update) {
         io.to(room.id).emit('room:update', update);
