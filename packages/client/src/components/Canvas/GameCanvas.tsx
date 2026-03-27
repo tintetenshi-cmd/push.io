@@ -164,6 +164,7 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     ctx.restore();
   }, [board, mapSize, offset, scale, players]);
 
+  // Force canvas redraw when players change
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -172,7 +173,14 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     if (!ctx) return;
 
     drawBoard(ctx, canvas);
-  }, [drawBoard, gameState]);
+    
+    // Log robot positions for debugging
+    players.forEach((p) => {
+      if (p.robot) {
+        console.log(`Canvas rendering: ${p.name} at (${p.robot.x},${p.robot.y}) direction=${p.robot.direction}`);
+      }
+    });
+  }, [drawBoard, players]);
 
   const handleWheel = (e: React.WheelEvent): void => {
     e.preventDefault();
@@ -305,8 +313,8 @@ function drawRobot(
   ctx.translate(centerX, centerY);
   // Convert game direction (0=North, 90=East, 180=South, 270=West)
   // to canvas rotation (0=East, 90=South, 180=West, 270=North)
-  // Canvas 0 is East, so we need to add 90 degrees offset
-  const canvasRotation = (renderDirection + 90) * (Math.PI / 180);
+  // Canvas Y is inverted, so we need: (450 - direction) % 360
+  const canvasRotation = ((450 - renderDirection) % 360) * (Math.PI / 180);
   ctx.rotate(canvasRotation);
 
   ctx.fillStyle = player.color;
