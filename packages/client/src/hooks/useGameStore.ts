@@ -70,11 +70,17 @@ export const useGameStore = create<GameStore>()(
 
       setSocket: (socket) => set({ socket }),
       setConnected: (isConnected) => set({ isConnected }),
-      setRoomUpdate: (update) => set({
+      setRoomUpdate: (update) => set((state) => ({
         room: update.room,
         players: update.players,
         chat: update.chat,
-      }),
+        // Sync phase from room update to ensure transitions work
+        gameState: {
+          ...state.gameState,
+          phase: update.room?.gameState?.phase ?? state.gameState.phase,
+          currentRegister: update.room?.gameState?.currentRegister ?? state.gameState.currentRegister,
+        },
+      })),
       addChatMessage: (message) => set((state) => ({
         chat: [...state.chat.slice(-49), message],
       })),
