@@ -22,6 +22,9 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat]);
 
+  // Find current player by socket ID (more reliable than name)
+  const currentPlayer = socket ? players.find((p) => p.socketId === socket.id) : undefined;
+
   const handleSendMessage = (e: React.FormEvent): void => {
     e.preventDefault();
     if (!socket || !message.trim()) return;
