@@ -46,8 +46,6 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
     );
   }
 
-  const currentPlayer = players.find((p) => p.name === playerSettings.name);
-
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 bg-primary-800/50 rounded-lg mb-4">
