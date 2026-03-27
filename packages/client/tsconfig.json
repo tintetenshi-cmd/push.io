@@ -13,7 +13,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@roborally/shared": ["../shared/src/index.ts"],
+      "@roborally/shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "references": [{ "path": "../shared" }]
