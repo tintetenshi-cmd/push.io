@@ -93,30 +93,31 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
         </div>
       </div>
 
-      {isHost && canAddBot && (
-        <div className="mb-4 p-4 bg-primary-800/50 rounded-xl">
+      {/* DEBUG: AI Bot section - always visible for testing */}
+      {(
+        <div className="mb-4 p-4 bg-primary-800/50 rounded-xl border-2 border-purple-500">
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Bot className="w-4 h-4 text-purple-400" />
-            Ajouter un bot IA
+            Ajouter un bot IA (DEBUG: isHost={isHost.toString()}, canAddBot={canAddBot.toString()}, players={players.length})
           </h4>
           <div className="flex gap-2">
             <button
               onClick={() => handleAddBot(Difficulty.EASY)}
-              disabled={addingBot}
+              disabled={addingBot || !isHost}
               className="flex-1 py-2 px-3 rounded-lg bg-green-600/50 hover:bg-green-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
               Facile
             </button>
             <button
               onClick={() => handleAddBot(Difficulty.MEDIUM)}
-              disabled={addingBot}
+              disabled={addingBot || !isHost}
               className="flex-1 py-2 px-3 rounded-lg bg-yellow-600/50 hover:bg-yellow-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
               Moyen
             </button>
             <button
               onClick={() => handleAddBot(Difficulty.HARD)}
-              disabled={addingBot}
+              disabled={addingBot || !isHost}
               className="flex-1 py-2 px-3 rounded-lg bg-red-600/50 hover:bg-red-500/50 disabled:opacity-50 text-sm font-medium transition-colors"
             >
               Difficile
