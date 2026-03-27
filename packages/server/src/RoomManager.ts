@@ -197,23 +197,24 @@ export class RoomManager {
 
   private findSpawnPosition(room: Room): Position | null {
     const size = room.mapSize;
-    const leftEdge = 0;
 
+    // Search entire board for valid spawn positions
     for (let y = 1; y < size - 1; y++) {
-      const x = leftEdge;
-      let occupied = false;
-      for (const player of room.players.values()) {
-        if (player.robot && player.robot.x === x && player.robot.y === y) {
-          occupied = true;
-          break;
+      for (let x = 1; x < size - 1; x++) {
+        let occupied = false;
+        for (const player of room.players.values()) {
+          if (player.robot && player.robot.x === x && player.robot.y === y) {
+            occupied = true;
+            break;
+          }
         }
-      }
-      const row = room.board[y];
-      if (!row) continue;
-      const cell = row[x];
-      if (!cell) continue;
-      if (!occupied && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
-        return { x, y };
+        const row = room.board[y];
+        if (!row) continue;
+        const cell = row[x];
+        if (!cell) continue;
+        if (!occupied && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
+          return { x, y };
+        }
       }
     }
     return null;
