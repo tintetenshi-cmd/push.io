@@ -311,13 +311,12 @@ function drawRobot(
 
   ctx.save();
   ctx.translate(centerX, centerY);
-  // Arrow drawn pointing right. 
-  // Game North(0) should show arrow up → canvas -90°
-  // Game East(90) should show arrow right → canvas 0°
-  // Game South(180) should show arrow down → canvas 90°
-  // Game West(270) should show arrow left → canvas 180°
-  // Formula: canvasRotation = -gameDirection
-  const canvasRotation = (-renderDirection) * (Math.PI / 180);
+  // Arrow drawn pointing right (0°)
+  // Game North(0°) → arrow up (-90° canvas) = 0 - 90 = -90 ✓
+  // Game East(90°) → arrow right (0° canvas) = 90 - 90 = 0 ✓
+  // Game South(180°) → arrow down (90° canvas) = 180 - 90 = 90 ✓
+  // Game West(270°) → arrow left (180° canvas) = 270 - 90 = 180 ✓
+  const canvasRotation = (renderDirection - 90) * (Math.PI / 180);
   ctx.rotate(canvasRotation);
 
   ctx.fillStyle = player.color;
