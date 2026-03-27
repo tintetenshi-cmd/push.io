@@ -10,7 +10,7 @@ interface GameLobbyProps {
 }
 
 export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElement {
-  const { room, players, socket, playerSettings } = useGameStore();
+  const { room, players, socket } = useGameStore();
   const [isReady, setIsReady] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [addingBot, setAddingBot] = useState(false);
