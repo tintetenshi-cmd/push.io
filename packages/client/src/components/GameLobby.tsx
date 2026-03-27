@@ -15,7 +15,8 @@ export default function GameLobby({ onBack }: GameLobbyProps): React.ReactElemen
   const [isStarting, setIsStarting] = useState(false);
   const [addingBot, setAddingBot] = useState(false);
 
-  const currentPlayer = players.find((p) => p.name === playerSettings.name);
+  // Find current player by socket ID instead of name (more reliable)
+  const currentPlayer = socket ? players.find((p) => p.socketId === socket.id) : undefined;
   const isHost = currentPlayer?.isHost ?? false;
   const humanPlayers = players.filter((p) => !p.isAI);
   const allReady = humanPlayers.length >= 1 && humanPlayers.every((p) => p.isReady);
