@@ -152,6 +152,27 @@ export class RoomManager {
     const isHost = room.players.size === 0;
     const spawnPos = this.findSpawnPosition(room);
 
+    // Create robot for all players if spawn position is available
+    const robot = spawnPos
+      ? {
+          id: uuidv4(),
+          playerId: socketId,
+          x: spawnPos.x,
+          y: spawnPos.y,
+          direction: Direction.EAST,
+          lives: room.players.size >= 4 ? 4 : 3,
+          damage: 0,
+          powerDown: false,
+          flagsTouched: [],
+          lockedRegisters: [false, false, false, false, false],
+          equipment: [],
+          archiveX: spawnPos.x,
+          archiveY: spawnPos.y,
+          archiveDirection: Direction.EAST,
+          destroyed: false,
+        }
+      : null;
+
     const player: Player = {
       id: uuidv4(),
       socketId,
@@ -161,49 +182,11 @@ export class RoomManager {
       isHost,
       isReady: false,
       isAI: false,
-      robot: isHost && spawnPos
-        ? {
-            id: uuidv4(),
-            playerId: socketId,
-            x: spawnPos.x,
-            y: spawnPos.y,
-            direction: Direction.EAST,
-            lives: room.players.size >= 4 ? 4 : 3,
-            damage: 0,
-            powerDown: false,
-            flagsTouched: [],
-            lockedRegisters: [false, false, false, false, false],
-            equipment: [],
-            archiveX: spawnPos.x,
-            archiveY: spawnPos.y,
-            archiveDirection: Direction.EAST,
-            destroyed: false,
-          }
-        : null,
+      robot,
       hand: [],
       registers: [null, null, null, null, null],
       lastActivity: Date.now(),
     };
-
-    if (!isHost && spawnPos) {
-      player.robot = {
-        id: uuidv4(),
-        playerId: socketId,
-        x: spawnPos.x,
-        y: spawnPos.y,
-        direction: Direction.EAST,
-        lives: room.players.size >= 4 ? 4 : 3,
-        damage: 0,
-        powerDown: false,
-        flagsTouched: [],
-        lockedRegisters: [false, false, false, false, false],
-        equipment: [],
-        archiveX: spawnPos.x,
-        archiveY: spawnPos.y,
-        archiveDirection: Direction.EAST,
-        destroyed: false,
-      };
-    }
 
     room.players.set(socketId, player);
     this.playerRooms.set(socketId, roomId);
