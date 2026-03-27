@@ -391,14 +391,40 @@ const processAITurns = (room: ReturnType<RoomManager['getRoom']>): void => {
       }
     }
 
-    // Check if all players have programmed
-    const allProgrammed = Array.from(room.players.values()).every(
-      p => p.registers.every(r => r !== null) || (p.robot?.powerDown ?? false)
-    );
+    // Check if all players have programmed AND are ready
+    const checkAllReady = () => {
+      const allReady = Array.from(room.players.values()).every(
+        p => (p.registers.every(r => r !== null) && p.isReady) || (p.robot?.powerDown ?? false)
+      );
 
-    if (allProgrammed && room.gameState.phase === GamePhase.PROGRAMMING) {
-      room.gameState.phase = GamePhase.RESOLUTION;
-      startPhaseResolution(room);
+      if (allReady && room.gameState.phase === GamePhase.PROGRAMMING) {
+        console.log('All players ready, starting resolution phase');
+        room.gameState.phase = GamePhase.RESOLUTION;
+        startPhaseResolution(room);
+        const update = serializeRoom(room);
+        if (update) {
+          io.to(room.id).emit('room:update', update);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    // Initial check after AI programming
+    if (!checkAllReady()) {
+      // If not all ready, check every 500ms until human is ready
+      const checkInterval = setInterval(() => {
+        if (room.gameState.phase !== GamePhase.PROGRAMMING) {
+          clearInterval(checkInterval);
+          return;
+        }
+        if (checkAllReady()) {
+          clearInterval(checkInterval);
+        }
+      }, 500);
+
+      // Clear interval after 30 seconds (timeout)
+      setTimeout(() => clearInterval(checkInterval), 30000);
     }
 
     const update = serializeRoom(room);

@@ -406,6 +406,11 @@ export class RoomManager {
     player.robot.powerDown = powerDown;
     player.lastActivity = Date.now();
 
+    // For AI players, automatically set isReady when they have programmed all registers
+    if (player.isAI && registers.every(r => r !== null)) {
+      player.isReady = true;
+    }
+
     return room;
   }
 
