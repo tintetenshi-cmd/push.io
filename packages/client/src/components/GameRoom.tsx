@@ -13,7 +13,7 @@ interface GameRoomProps {
 }
 
 export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement {
-  const { room, players, socket, gameState, playerSettings, chat } = useGameStore();
+  const { room, players, socket, gameState, chat } = useGameStore();
   const [message, setMessage] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
