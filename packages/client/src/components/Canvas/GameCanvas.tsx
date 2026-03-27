@@ -21,6 +21,14 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const avatarImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
+  // Debug: log players and their robots
+  useEffect(() => {
+    console.log('GameCanvas players:', players);
+    players.forEach((p, i) => {
+      console.log(`Player ${i}:`, p.name, 'robot:', p.robot, 'hand:', p.hand);
+    });
+  }, [players]);
+
   const mapSize = room.mapSize;
   const board = room.board;
   const boardPixelSize = mapSize * CELL_SIZE;
