@@ -23,13 +23,20 @@ interface DropSlotProps {
 function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): React.ReactElement {
   const { socket } = useGameStore();
 
+  // Use ref to always have access to fresh registers value
+  const registersRef = React.useRef(currentRegisters);
+  React.useEffect(() => {
+    registersRef.current = currentRegisters;
+  }, [currentRegisters]);
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'CARD',
     drop: (item: { card: Card }) => {
       if (!socket || isLocked) return;
-      // Create new registers array preserving existing cards
-      const newRegisters = [...currentRegisters];
+      // Use the ref to get fresh registers value
+      const newRegisters = [...registersRef.current];
       newRegisters[index] = item.card;
+      console.log('Dropping card', item.card.type, 'into slot', index + 1, 'registers:', newRegisters.map((r, i) => `slot${i+1}: ${r?.type || 'empty'}`).join(', '));
       socket.emit('game:program', {
         registers: newRegisters,
         powerDown: false,
@@ -38,7 +45,7 @@ function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): R
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
-  }));
+  }), [socket, isLocked, index]); // Add dependencies
 
   return (
     <div
