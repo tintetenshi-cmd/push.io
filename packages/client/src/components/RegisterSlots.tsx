@@ -60,6 +60,9 @@ function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): R
 }
 
 export default function RegisterSlots({ player }: RegisterSlotsProps): React.ReactElement {
+  // Debug: log current registers
+  console.log('RegisterSlots registers:', player.registers.map((r, i) => `slot${i+1}: ${r?.type || 'empty'}`).join(', '));
+
   return (
     <div className="bg-primary-800/50 rounded-xl p-4">
       <h3 className="font-semibold mb-4 text-center">Registres (1-5)</h3>

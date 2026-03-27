@@ -6,8 +6,20 @@ import type { Card } from '@roborally/shared';
 interface CardHandProps {
   player: {
     hand: Card[];
+    registers: (Card | null)[];
   };
 }
+
+// Get cards that are in registers (placed on board)
+const getCardsInRegisters = (registers: (Card | null)[]): Card[] => {
+  return registers.filter((r): r is Card => r !== null);
+};
+
+// Filter hand to show only cards not in registers
+const getAvailableCards = (hand: Card[], registers: (Card | null)[]): Card[] => {
+  const registerCardIds = new Set(getCardsInRegisters(registers).map((c) => c.id));
+  return hand.filter((card) => !registerCardIds.has(card.id));
+};
 
 const CARD_ICONS: Record<string, React.ReactNode> = {
   forward_1: <Move className="w-6 h-6" />,
@@ -58,11 +70,16 @@ function DraggableCard({ card, index }: { card: Card; index: number }): React.Re
 }
 
 export default function CardHand({ player }: CardHandProps): React.ReactElement {
+  const availableCards = getAvailableCards(player.hand, player.registers);
+  const placedCards = getCardsInRegisters(player.registers).length;
+
   return (
     <div className="bg-primary-800/50 rounded-xl p-4">
-      <h3 className="font-semibold mb-3">Main ({player.hand.length} cartes)</h3>
+      <h3 className="font-semibold mb-3">
+        Main ({availableCards.length} disponibles, {placedCards} placées)
+      </h3>
       <div className="flex flex-wrap gap-2 justify-center">
-        {player.hand.map((card, index) => (
+        {availableCards.map((card, index) => (
           <DraggableCard key={card.id} card={card} index={index} />
         ))}
       </div>
