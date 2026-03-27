@@ -303,7 +303,11 @@ function drawRobot(
 
   ctx.save();
   ctx.translate(centerX, centerY);
-  ctx.rotate((renderDirection * Math.PI) / 180);
+  // Convert game direction (0=North, 90=East, 180=South, 270=West)
+  // to canvas rotation (0=East, 90=South, 180=West, 270=North)
+  // Canvas 0 is East, so we need to add 90 degrees offset
+  const canvasRotation = (renderDirection + 90) * (Math.PI / 180);
+  ctx.rotate(canvasRotation);
 
   ctx.fillStyle = player.color;
   ctx.beginPath();
