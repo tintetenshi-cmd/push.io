@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import type { Room, Player, Cell } from '@roborally/shared';
-import { CellType } from '@roborally/shared';
+import { CellType, GamePhase, PhaseStep } from '@roborally/shared';
 import { AVATAR_SVGS } from '../../utils/svgAvatars';
 import { useGameStore } from '../../hooks/useGameStore';
 
@@ -146,7 +146,7 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
         let interpY = player.robot.y;
         let interpDir = player.robot.direction;
 
-        if (gameState.phase === 'RESOLUTION' && gameState.currentStep === 'MOVE_ROBOTS') {
+        if (gameState.phase === GamePhase.RESOLUTION && gameState.currentStep === PhaseStep.MOVE_ROBOTS) {
           const prev = prevPositionsRef.current.get(player.id);
           if (prev) {
             const progress = animationProgressRef.current;
