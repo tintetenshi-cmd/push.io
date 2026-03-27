@@ -457,6 +457,8 @@ function startPhaseResolution(room: Room): void {
         console.log('room:update emitted after nextTurn');
       }
       console.log('Returning from runNextPhase after completing all registers');
+      // Trigger AI programming for the new turn
+      processAITurns(room);
       return;
     }
 
