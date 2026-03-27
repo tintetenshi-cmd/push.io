@@ -411,21 +411,29 @@ const processAITurns = (room: ReturnType<RoomManager['getRoom']>): void => {
 function startPhaseResolution(room: Room): void {
   if (!room) return;
 
+  console.log('startPhaseResolution called for room', room.id, 'current phase:', room.gameState.phase);
+
   let currentRegister = 0;
 
   const runNextPhase = () => {
     if (!room) return;
+    console.log('runNextPhase called, currentRegister:', currentRegister, 'phase:', room?.gameState.phase);
+
     if (currentRegister >= 5) {
+      console.log('All 5 registers executed, calling nextTurn');
       nextTurn(room, roomManager.dealCards.bind(roomManager));
+      console.log('nextTurn completed, new phase:', room.gameState.phase, 'turn:', room.gameState.turnNumber);
       const update = serializeRoom(room);
       if (update) {
         io.to(room.id).emit('room:update', update);
+        console.log('room:update emitted after nextTurn');
       }
       return;
     }
 
     currentRegister++;
     room.gameState.currentRegister = currentRegister;
+    console.log('Starting register', currentRegister, 'of 5');
     io.to(room.id).emit('game:phase', GamePhase.RESOLUTION, currentRegister);
 
     const phaseSteps = [
