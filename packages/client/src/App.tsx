@@ -69,7 +69,7 @@ function App(): React.ReactElement {
           </div>
         </header>
 
-        <main className="pt-20 px-4 pb-4 min-h-screen flex flex-col">
+        <main className="pt-20 px-4 pb-4 h-screen flex flex-col overflow-hidden">
           <AnimatePresence mode="wait">
             {view === 'menu' && (
               <motion.div
@@ -126,7 +126,7 @@ function App(): React.ReactElement {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex-1"
+                className="flex-1 h-full overflow-hidden"
               >
                 <GameRoom onLeave={handleLeaveGame} />
               </motion.div>

@@ -72,9 +72,9 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
         </div>
       </header>
 
-      <div className="flex-1 flex gap-4 overflow-hidden">
-        <div className="flex-[2] flex flex-col gap-4 min-w-0">
-          <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50 flex items-center justify-center">
+      <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
+        <div className="flex-[2] flex flex-col gap-4 min-w-0 min-h-0">
+          <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50 flex items-center justify-center min-h-0">
             <GameCanvas room={room} players={players} />
           </div>
 
@@ -91,7 +91,7 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-80 flex flex-col gap-4 h-full"
+            className="w-80 flex flex-col gap-4 h-full min-h-0"
           >
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
