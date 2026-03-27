@@ -459,6 +459,12 @@ function startPhaseResolution(room: Room): void {
 
       if (step === PhaseStep.MOVE_ROBOTS) {
         executePhase(room, currentRegister);
+        // Emit room update so clients see new robot positions
+        const update = serializeRoom(room);
+        if (update) {
+          io.to(room.id).emit('room:update', update);
+          console.log('room:update emitted after MOVE_ROBOTS for register', currentRegister);
+        }
       }
 
       let progress = 0;
@@ -469,6 +475,12 @@ function startPhaseResolution(room: Room): void {
         if (progress >= 100) {
           clearInterval(progressInterval);
           stepIndex++;
+          // Emit room update after each step completes so clients see state changes
+          const update = serializeRoom(room);
+          if (update) {
+            io.to(room.id).emit('room:update', update);
+          }
+          console.log(`Step ${step} completed for register ${currentRegister}, next stepIndex: ${stepIndex}`);
           setTimeout(runStep, 200);
         }
       }, 100);
