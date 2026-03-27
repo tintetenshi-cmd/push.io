@@ -54,7 +54,7 @@ const limiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || 'unknown',
+  keyGenerator: (req: Request) => req.ip || 'unknown',
 });
 
 app.use(cors({
@@ -214,6 +214,8 @@ io.on('connection', (socket: Socket) => {
       if (update) {
         io.to(room.id).emit('room:update', update);
       }
+      // Process AI turns after game starts
+      processAITurns(room);
       callback({ success: true });
     } else {
       callback({ success: false, error: 'Cannot start game' });
@@ -299,7 +301,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('game:program', (data: unknown) => {
     try {
       const validated = ProgramDataSchema.parse(data);
-      const registers = validated.registers.map(r => r ? { id: r.id, type: r.type as CardType, priority: r.priority } : null);
+      const registers = validated.registers.map((r: { id: string; type: string; priority: number } | null) => r ? { id: r.id, type: r.type as CardType, priority: r.priority } : null);
       const room = roomManager.submitProgram(socket.id, registers, validated.powerDown);
 
       if (room) {
@@ -365,10 +367,11 @@ io.on('connection', (socket: Socket) => {
       }
     }
   });
+});
 
-  // AI turn processing function - called when game starts or during programming phase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function processAITurns(room: ReturnType<RoomManager['getRoom']>): void {
+// AI turn processing function - called when game starts or during programming phase
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const processAITurns = (room: ReturnType<RoomManager['getRoom']>): void => {
   if (!room) return;
 
   const aiPlayers = Array.from(room.players.values()).filter(p => p.isAI);
@@ -394,8 +397,7 @@ io.on('connection', (socket: Socket) => {
   if (update) {
     io.to(room.id).emit('room:update', update);
   }
-}
-});
+};
 
 function startPhaseResolution(room: Room): void {
   if (!room) return;

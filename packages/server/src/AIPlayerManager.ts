@@ -216,8 +216,6 @@ export class AIPlayerManager {
     // Simulate move
     let newX = robot.x;
     let newY = robot.y;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let newDir = robot.direction;
 
     switch (card.type) {
       case CardType.FORWARD_1:
@@ -233,13 +231,10 @@ export class AIPlayerManager {
         ({ x: newX, y: newY } = this.simulateMove(robot.x, robot.y, robot.direction, -1));
         break;
       case CardType.ROTATE_LEFT:
-        newDir = (robot.direction - 90 + 360) % 360;
         break;
       case CardType.ROTATE_RIGHT:
-        newDir = (robot.direction + 90) % 360;
         break;
       case CardType.U_TURN:
-        newDir = (robot.direction + 180) % 360;
         break;
     }
 

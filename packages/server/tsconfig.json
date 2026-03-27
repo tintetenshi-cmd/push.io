@@ -3,8 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "baseUrl": ".",
+    "paths": {
+      "@roborally/shared": ["../shared/src/index.ts"],
+      "@roborally/shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "references": [{ "path": "../shared" }]
