@@ -87,7 +87,7 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
             <GameCanvas room={room} players={players} />
           </div>
 
-          {currentPlayer && gameState.phase === 'programming' && (
+          {currentPlayer && gameState.phase.toLowerCase() === 'programming' && (
             <div className="flex flex-col gap-2">
               <RegisterSlots player={currentPlayer} />
               <CardHand player={currentPlayer} />
