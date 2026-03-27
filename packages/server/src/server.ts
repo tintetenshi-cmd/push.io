@@ -195,7 +195,7 @@ io.on('connection', (socket: Socket) => {
     socket.leave(socket.id);
   });
 
-  socket.on('room:ready', (isReady: boolean, callback: (result: { success: boolean }) => void) => {
+  socket.on('room:ready', (isReady: boolean, callback?: (result: { success: boolean }) => void) => {
     const room = roomManager.setPlayerReady(socket.id, isReady);
     if (room) {
       const update = serializeRoom(room);
@@ -203,7 +203,9 @@ io.on('connection', (socket: Socket) => {
         io.to(room.id).emit('room:update', update);
       }
     }
-    callback({ success: true });
+    if (callback) {
+      callback({ success: true });
+    }
   });
 
   socket.on('room:start', (callback: (result: { success: boolean; error?: string }) => void) => {
