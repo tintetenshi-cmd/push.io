@@ -81,6 +81,29 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
         </div>
       </header>
 
+      {/* Phase indicator - prominent during resolution */}
+      {gameState.phase.toLowerCase() === 'resolution' && (
+        <div className="bg-yellow-600/80 rounded-lg p-3 mb-4 text-center animate-pulse">
+          <div className="font-bold text-lg">⚡ PHASE DE RÉSOLUTION ⚡</div>
+          <div className="text-sm">
+            Registre {gameState.currentRegister}/5 en cours d'exécution
+            {gameState.currentStep && (
+              <span className="ml-2 text-yellow-200">
+                • {gameState.currentStep.replace(/_/g, ' ')}
+              </span>
+            )}
+          </div>
+          {gameState.stepProgress > 0 && (
+            <div className="w-full bg-yellow-900/50 rounded-full h-2 mt-2">
+              <div
+                className="bg-yellow-300 h-2 rounded-full transition-all duration-100"
+                style={{ width: `${gameState.stepProgress}%` }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
         <div className="flex-[2] flex flex-col gap-4 min-w-0 min-h-0">
           <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50 flex items-center justify-center min-h-0">
