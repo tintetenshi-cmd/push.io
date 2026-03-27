@@ -23,6 +23,31 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
 
   const mapSize = room.mapSize;
   const board = room.board;
+  const boardPixelSize = mapSize * CELL_SIZE;
+
+  // Calculate initial centering offset
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    // Calculate scale to fit the board in the container with some padding
+    const padding = 40;
+    const scaleX = (containerWidth - padding * 2) / boardPixelSize;
+    const scaleY = (containerHeight - padding * 2) / boardPixelSize;
+    const fitScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 1
+    
+    setScale(Math.max(fitScale, 0.5)); // Minimum scale 0.5
+    
+    // Center the board
+    const scaledBoardSize = boardPixelSize * fitScale;
+    const centerX = (containerWidth - scaledBoardSize) / 2;
+    const centerY = (containerHeight - scaledBoardSize) / 2;
+    
+    setOffset({ x: centerX, y: centerY });
+  }, [boardPixelSize, mapSize]);
 
   useEffect(() => {
     const loadAvatars = async (): Promise<void> => {
