@@ -311,11 +311,13 @@ function drawRobot(
 
   ctx.save();
   ctx.translate(centerX, centerY);
-  // Arrow is drawn pointing right. For North (0°), arrow should point up (-90° in canvas).
-  // canvasRotation = -gameDirection gives: North=0→0° (right, wrong), East=90→-90° (up, wrong)
-  // We need: North=0→-90° (up), East=90→0° (right), South=180→90° (down), West=270→180° (left)
-  // So: canvasRotation = -gameDirection - 90 = -(gameDirection + 90)
-  const canvasRotation = (-renderDirection - 90) * (Math.PI / 180);
+  // Arrow drawn pointing right. 
+  // Game North(0) should show arrow up → canvas -90°
+  // Game East(90) should show arrow right → canvas 0°
+  // Game South(180) should show arrow down → canvas 90°
+  // Game West(270) should show arrow left → canvas 180°
+  // Formula: canvasRotation = -gameDirection
+  const canvasRotation = (-renderDirection) * (Math.PI / 180);
   ctx.rotate(canvasRotation);
 
   ctx.fillStyle = player.color;
