@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import type { Room, Player, Cell } from '@roborally/shared';
 import { CellType } from '@roborally/shared';
 import { AVATAR_SVGS } from '../../utils/svgAvatars';
+import { useGameStore } from '../../hooks/useGameStore';
 
 interface GameCanvasProps {
   room: Room;
@@ -20,6 +21,32 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const avatarImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const { gameState } = useGameStore();
+
+  // Track previous robot positions for animation
+  const prevPositionsRef = useRef<Map<string, { x: number; y: number; direction: number }>>(new Map());
+  const animationProgressRef = useRef<number>(0);
+
+  // Track previous positions when they change
+  useEffect(() => {
+    players.forEach((player) => {
+      if (player.robot) {
+        const prev = prevPositionsRef.current.get(player.id);
+        const current = { x: player.robot.x, y: player.robot.y, direction: player.robot.direction };
+
+        if (prev && (prev.x !== current.x || prev.y !== current.y)) {
+          console.log(`Robot ${player.name} moved from (${prev.x},${prev.y}) to (${current.x},${current.y})`);
+        }
+
+        prevPositionsRef.current.set(player.id, current);
+      }
+    });
+  }, [players]);
+
+  // Update animation progress
+  useEffect(() => {
+    animationProgressRef.current = gameState.stepProgress / 100;
+  }, [gameState.stepProgress]);
 
   // Debug: log players and their robots
   useEffect(() => {
@@ -114,7 +141,23 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
 
     for (const player of players) {
       if (player.robot && !player.robot.destroyed) {
-        drawRobot(ctx, player);
+        // During resolution phase with MOVE_ROBOTS step, interpolate positions
+        let interpX = player.robot.x;
+        let interpY = player.robot.y;
+        let interpDir = player.robot.direction;
+
+        if (gameState.phase === 'RESOLUTION' && gameState.currentStep === 'MOVE_ROBOTS') {
+          const prev = prevPositionsRef.current.get(player.id);
+          if (prev) {
+            const progress = animationProgressRef.current;
+            interpX = prev.x + (player.robot.x - prev.x) * progress;
+            interpY = prev.y + (player.robot.y - prev.y) * progress;
+            const dirDiff = player.robot.direction - prev.direction;
+            interpDir = prev.direction + dirDiff * progress;
+          }
+        }
+
+        drawRobot(ctx, player, interpX, interpY, interpDir);
       }
     }
 
@@ -129,7 +172,7 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     if (!ctx) return;
 
     drawBoard(ctx, canvas);
-  }, [drawBoard]);
+  }, [drawBoard, gameState]);
 
   const handleWheel = (e: React.WheelEvent): void => {
     e.preventDefault();
@@ -238,19 +281,29 @@ function drawCellContent(ctx: CanvasRenderingContext2D, cell: Cell, x: number, y
   }
 }
 
-function drawRobot(ctx: CanvasRenderingContext2D, player: Player): void {
+function drawRobot(
+  ctx: CanvasRenderingContext2D,
+  player: Player,
+  interpolatedX?: number,
+  interpolatedY?: number,
+  interpolatedDirection?: number
+): void {
   if (!player.robot) return;
 
   const { x, y, direction } = player.robot;
-  const pixelX = x * CELL_SIZE;
-  const pixelY = y * CELL_SIZE;
+  const renderX = interpolatedX !== undefined ? interpolatedX : x;
+  const renderY = interpolatedY !== undefined ? interpolatedY : y;
+  const renderDirection = interpolatedDirection !== undefined ? interpolatedDirection : direction;
+
+  const pixelX = renderX * CELL_SIZE;
+  const pixelY = renderY * CELL_SIZE;
   const centerX = pixelX + CELL_SIZE / 2;
   const centerY = pixelY + CELL_SIZE / 2;
   const radius = CELL_SIZE * 0.35;
 
   ctx.save();
   ctx.translate(centerX, centerY);
-  ctx.rotate((direction * Math.PI) / 180);
+  ctx.rotate((renderDirection * Math.PI) / 180);
 
   ctx.fillStyle = player.color;
   ctx.beginPath();
