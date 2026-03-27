@@ -8,9 +8,9 @@ interface GameCanvasProps {
   players: Player[];
 }
 
-const CELL_SIZE = 40;
-const MIN_SCALE = 0.5;
-const MAX_SCALE = 3;
+const CELL_SIZE = 50;
+const MIN_SCALE = 0.3;
+const MAX_SCALE = 5;
 
 export default function GameCanvas({ room, players }: GameCanvasProps): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);

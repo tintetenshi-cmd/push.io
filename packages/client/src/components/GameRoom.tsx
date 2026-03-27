@@ -73,8 +73,8 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
       </header>
 
       <div className="flex-1 flex gap-4 overflow-hidden">
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
-          <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50">
+        <div className="flex-[2] flex flex-col gap-4 min-w-0">
+          <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50 flex items-center justify-center">
             <GameCanvas room={room} players={players} />
           </div>
 
