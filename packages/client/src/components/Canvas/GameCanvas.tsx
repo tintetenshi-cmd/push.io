@@ -312,9 +312,8 @@ function drawRobot(
   ctx.save();
   ctx.translate(centerX, centerY);
   // Convert game direction (0=North, 90=East, 180=South, 270=West)
-  // to canvas rotation (0=East, 90=South, 180=West, 270=North)
-  // Canvas Y is inverted, so we need: (450 - direction) % 360
-  const canvasRotation = ((450 - renderDirection) % 360) * (Math.PI / 180);
+  // to canvas rotation - invert direction for correct arrow pointing
+  const canvasRotation = ((-renderDirection + 90) % 360) * (Math.PI / 180);
   ctx.rotate(canvasRotation);
 
   ctx.fillStyle = player.color;
