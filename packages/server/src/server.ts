@@ -307,11 +307,13 @@ io.on('connection', (socket: Socket) => {
       const room = roomManager.submitProgram(socket.id, registers, validated.powerDown);
 
       if (room) {
-        const allProgrammed = Array.from(room.players.values()).every(
-          p => p.registers.every(r => r !== null) || (p.robot?.powerDown ?? false)
+        // Check if all players have programmed AND are ready
+        const allReady = Array.from(room.players.values()).every(
+          p => (p.registers.every(r => r !== null) && p.isReady) || (p.robot?.powerDown ?? false)
         );
 
-        if (allProgrammed && room.gameState.phase === GamePhase.PROGRAMMING) {
+        if (allReady && room.gameState.phase === GamePhase.PROGRAMMING) {
+          console.log('All players programmed and ready, starting resolution');
           room.gameState.phase = GamePhase.RESOLUTION;
           startPhaseResolution(room);
         }
