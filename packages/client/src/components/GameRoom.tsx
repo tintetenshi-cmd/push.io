@@ -91,7 +91,7 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-80 flex flex-col gap-4"
+            className="w-80 flex flex-col gap-4 h-full"
           >
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
