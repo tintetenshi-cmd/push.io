@@ -25,6 +25,14 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
   // Find current player by socket ID (more reliable than name)
   const currentPlayer = socket ? players.find((p) => p.socketId === socket.id) : undefined;
 
+  // Debug logging
+  console.log('GameRoom state:', {
+    currentPlayer: currentPlayer?.name,
+    phase: gameState.phase,
+    phaseCheck: gameState.phase === 'programming',
+    shouldShowProgramming: currentPlayer && gameState.phase === 'programming'
+  });
+
   const handleSendMessage = (e: React.FormEvent): void => {
     e.preventDefault();
     if (!socket || !message.trim()) return;
