@@ -378,27 +378,34 @@ const processAITurns = (room: ReturnType<RoomManager['getRoom']>): void => {
 
   const aiPlayers = Array.from(room.players.values()).filter(p => p.isAI);
 
-  for (const player of aiPlayers) {
-    if (!player.robot?.powerDown) {
-      const aiRegisters = roomManager.getAIProgram(player, room);
-      roomManager.submitProgram(player.socketId, aiRegisters, false);
+  // Add delay before AI programs to prevent infinite loop
+  setTimeout(() => {
+    if (!room) return;
+    // Check if still in programming phase (might have changed during delay)
+    if (room.gameState.phase !== GamePhase.PROGRAMMING) return;
+
+    for (const player of aiPlayers) {
+      if (!player.robot?.powerDown) {
+        const aiRegisters = roomManager.getAIProgram(player, room);
+        roomManager.submitProgram(player.socketId, aiRegisters, false);
+      }
     }
-  }
 
-  // Check if all players have programmed
-  const allProgrammed = Array.from(room.players.values()).every(
-    p => p.registers.every(r => r !== null) || (p.robot?.powerDown ?? false)
-  );
+    // Check if all players have programmed
+    const allProgrammed = Array.from(room.players.values()).every(
+      p => p.registers.every(r => r !== null) || (p.robot?.powerDown ?? false)
+    );
 
-  if (allProgrammed && room.gameState.phase === GamePhase.PROGRAMMING) {
-    room.gameState.phase = GamePhase.RESOLUTION;
-    startPhaseResolution(room);
-  }
+    if (allProgrammed && room.gameState.phase === GamePhase.PROGRAMMING) {
+      room.gameState.phase = GamePhase.RESOLUTION;
+      startPhaseResolution(room);
+    }
 
-  const update = serializeRoom(room);
-  if (update) {
-    io.to(room.id).emit('room:update', update);
-  }
+    const update = serializeRoom(room);
+    if (update) {
+      io.to(room.id).emit('room:update', update);
+    }
+  }, 3000); // 3 secondes de délai
 };
 
 function startPhaseResolution(room: Room): void {
