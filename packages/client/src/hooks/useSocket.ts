@@ -56,6 +56,7 @@ export function useSocket(): {
 
     socket.on('game:started', () => {
       console.log('Game started');
+      setGamePhase('PROGRAMMING' as GamePhase, 0);
     });
 
     socket.on('game:phase', (phase: GamePhase, register: number) => {
