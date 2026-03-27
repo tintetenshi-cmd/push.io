@@ -428,6 +428,7 @@ function startPhaseResolution(room: Room): void {
         io.to(room.id).emit('room:update', update);
         console.log('room:update emitted after nextTurn');
       }
+      console.log('Returning from runNextPhase after completing all registers');
       return;
     }
 
@@ -449,8 +450,13 @@ function startPhaseResolution(room: Room): void {
 
     const runStep = () => {
       if (!room) return;
+      console.log(`runStep called, stepIndex: ${stepIndex}, phaseSteps.length: ${phaseSteps.length}, currentRegister: ${currentRegister}`);
       if (stepIndex >= phaseSteps.length) {
-        setTimeout(runNextPhase, 1000);
+        console.log(`stepIndex >= phaseSteps.length, scheduling runNextPhase in 1000ms`);
+        setTimeout(() => {
+          console.log('Executing scheduled runNextPhase after all steps completed');
+          runNextPhase();
+        }, 1000);
         return;
       }
 
