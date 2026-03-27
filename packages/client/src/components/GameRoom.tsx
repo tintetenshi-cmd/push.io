@@ -91,7 +91,7 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
             <div className="flex flex-col gap-2">
               <RegisterSlots player={currentPlayer} />
               <CardHand player={currentPlayer} />
-              <ReadyBtn />
+              <ReadyBtn registers={currentPlayer.registers} />
             </div>
           )}
         </div>

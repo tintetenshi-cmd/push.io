@@ -2,14 +2,22 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Power } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
+import type { Card } from '@roborally/shared';
 
-export default function ReadyBtn(): React.ReactElement {
+interface ReadyBtnProps {
+  registers: (Card | null)[];
+}
+
+export default function ReadyBtn({ registers }: ReadyBtnProps): React.ReactElement {
   const { socket } = useGameStore();
   const [isReady, setIsReady] = useState(false);
   const [powerDown, setPowerDown] = useState(false);
 
+  const filledRegisters = registers.filter((r) => r !== null).length;
+  const canReady = filledRegisters === 5;
+
   const handleReady = (): void => {
-    if (!socket) return;
+    if (!socket || !canReady) return;
     const newReady = !isReady;
     setIsReady(newReady);
     socket.emit('room:ready', newReady);
@@ -28,16 +36,19 @@ export default function ReadyBtn(): React.ReactElement {
   return (
     <div className="flex gap-4">
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: canReady ? 0.95 : 1 }}
         onClick={handleReady}
+        disabled={!canReady}
         className={`flex-1 py-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-          isReady
-            ? 'bg-green-600 hover:bg-green-500'
-            : 'bg-primary-500 hover:bg-primary-400 animate-pulse'
+          !canReady
+            ? 'bg-gray-600 cursor-not-allowed'
+            : isReady
+              ? 'bg-green-600 hover:bg-green-500'
+              : 'bg-primary-500 hover:bg-primary-400 animate-pulse'
         }`}
       >
         <Check className="w-5 h-5" />
-        {isReady ? 'Prêt!' : 'Prêt?'}
+        {isReady ? 'Prêt!' : `Prêt? (${filledRegisters}/5)`}
       </motion.button>
 
       <motion.button

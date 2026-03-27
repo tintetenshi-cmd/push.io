@@ -13,15 +13,25 @@ interface RegisterSlotsProps {
   };
 }
 
-function DropSlot({ index, card, isLocked }: { index: number; card: Card | null; isLocked: boolean }): React.ReactElement {
+interface DropSlotProps {
+  index: number;
+  card: Card | null;
+  isLocked: boolean;
+  currentRegisters: (Card | null)[];
+}
+
+function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): React.ReactElement {
   const { socket } = useGameStore();
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'CARD',
     drop: (item: { card: Card }) => {
       if (!socket || isLocked) return;
+      // Create new registers array preserving existing cards
+      const newRegisters = [...currentRegisters];
+      newRegisters[index] = item.card;
       socket.emit('game:program', {
-        registers: Array(5).fill(null).map((_, i) => i === index ? item.card : null),
+        registers: newRegisters,
         powerDown: false,
       });
     },
@@ -60,6 +70,7 @@ export default function RegisterSlots({ player }: RegisterSlotsProps): React.Rea
             index={index}
             card={card}
             isLocked={player.robot?.lockedRegisters[index] ?? false}
+            currentRegisters={player.registers}
           />
         ))}
       </div>
