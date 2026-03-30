@@ -202,6 +202,19 @@ io.on('connection', (socket: Socket) => {
       if (update) {
         io.to(room.id).emit('room:update', update);
       }
+      
+      // Check if all players have programmed AND are ready - only start when explicitly clicking Ready
+      if (room.gameState.phase === GamePhase.PROGRAMMING) {
+        const allReady = Array.from(room.players.values()).every(
+          p => (p.registers.every(r => r !== null) && p.isReady) || (p.robot?.powerDown ?? false)
+        );
+        
+        if (allReady) {
+          console.log('All players programmed and ready, starting resolution');
+          room.gameState.phase = GamePhase.RESOLUTION;
+          startPhaseResolution(room);
+        }
+      }
     }
     if (callback) {
       callback({ success: true });
@@ -307,24 +320,15 @@ io.on('connection', (socket: Socket) => {
       const room = roomManager.submitProgram(socket.id, registers, validated.powerDown);
 
       if (room) {
-        // Check if all players have programmed AND are ready
-        const allReady = Array.from(room.players.values()).every(
-          p => (p.registers.every(r => r !== null) && p.isReady) || (p.robot?.powerDown ?? false)
-        );
-
-        if (allReady && room.gameState.phase === GamePhase.PROGRAMMING) {
-          console.log('All players programmed and ready, starting resolution');
-          room.gameState.phase = GamePhase.RESOLUTION;
-          startPhaseResolution(room);
-        }
-
+        // Only update the room state, don't start the turn
+        // Turn will only start when player explicitly clicks Ready
         const update = serializeRoom(room);
         if (update) {
           io.to(room.id).emit('room:update', update);
         }
       }
     } catch (error) {
-      socket.emit('error', 'Invalid program data');
+      console.error('Error programming cards:', error);
     }
   });
 

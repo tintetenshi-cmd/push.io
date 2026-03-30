@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Power } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import type { Card } from '@roborally/shared';
+import { GamePhase } from '@roborally/shared';
 
 interface ReadyBtnProps {
   registers: (Card | null)[];
+  isReady?: boolean;
 }
 
-export default function ReadyBtn({ registers }: ReadyBtnProps): React.ReactElement {
-  const { socket } = useGameStore();
-  const [isReady, setIsReady] = useState(false);
+export default function ReadyBtn({ registers, isReady: serverIsReady }: ReadyBtnProps): React.ReactElement {
+  const { socket, gameState } = useGameStore();
+  const [isReady, setIsReady] = useState(serverIsReady ?? false);
   const [powerDown, setPowerDown] = useState(false);
+
+  // Sync with server state and reset when entering programming phase
+  useEffect(() => {
+    if (serverIsReady !== undefined) {
+      setIsReady(serverIsReady);
+    }
+  }, [serverIsReady]);
+
+  // Reset ready state when entering programming phase (new turn)
+  useEffect(() => {
+    if (gameState.phase === GamePhase.PROGRAMMING) {
+      setIsReady(false);
+    }
+  }, [gameState.phase, gameState.turnNumber]);
 
   const filledRegisters = registers.filter((r) => r !== null).length;
   const canReady = filledRegisters === 5;

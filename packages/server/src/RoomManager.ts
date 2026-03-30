@@ -433,10 +433,9 @@ export class RoomManager {
     player.robot.powerDown = powerDown;
     player.lastActivity = Date.now();
 
-    // For AI players, automatically set isReady when they have programmed all registers
-    if (player.isAI && registers.every(r => r !== null)) {
-      player.isReady = true;
-    }
+    // Note: AI players do NOT auto-set isReady=true here
+    // They should wait for the human player to click Ready first
+    // The human clicking Ready will trigger the turn start if everyone is programmed
 
     return room;
   }
