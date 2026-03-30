@@ -1,79 +1,74 @@
 import { Cell, Position, Direction, Robot, Room, Player } from '@roborally/shared';
 import { CellType, GamePhase, CardType, CARD_PRIORITIES } from '@roborally/shared';
 
-const WALL_PROBABILITY = 0.20;
-const CONVEYOR_PROBABILITY = 0.15;
-const LASER_PROBABILITY = 0.10;
-const GEAR_PROBABILITY = 0.08;
-const PUSHER_PROBABILITY = 0.05;
-const PIT_PROBABILITY = 0.03;
+const WALL_PROBABILITY = 0.05;
+const PIT_PROBABILITY = 0.02;
+const GEAR_PROBABILITY = 0.05;
+const LASER_PROBABILITY = 0.03;
 
 export function generateMap(size: number): Cell[][] {
   const board: Cell[][] = [];
 
+  // Initialize empty board
   for (let y = 0; y < size; y++) {
     const row: Cell[] = [];
     for (let x = 0; x < size; x++) {
-      let cell: Cell = { type: CellType.EMPTY };
+      row.push({ type: CellType.EMPTY });
+    }
+    board.push(row);
+  }
 
+  // Place border walls
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
       if (y === 0 || y === size - 1 || x === 0 || x === size - 1) {
-        cell = { type: CellType.WALL };
-      } else {
-        const rand = Math.random();
-        let cumulative = 0;
+        const row = board[y];
+        if (row) row[x] = { type: CellType.WALL };
+      }
+    }
+  }
 
-        cumulative += WALL_PROBABILITY;
-        if (rand < cumulative && !hasWallCluster(board, x, y)) {
-          cell = { type: CellType.WALL };
+  // Create intelligent conveyor belt paths
+  createConveyorPaths(board, size);
+
+  // Place other elements with lower probabilities
+  for (let y = 1; y < size - 1; y++) {
+    const row = board[y];
+    if (!row) continue;
+    
+    for (let x = 1; x < size - 1; x++) {
+      const cell = row[x];
+      if (!cell || cell.type !== CellType.EMPTY) continue;
+
+      const rand = Math.random();
+      let cumulative = 0;
+
+      cumulative += WALL_PROBABILITY;
+      if (rand < cumulative && !hasWallCluster(board, x, y)) {
+        row[x] = { type: CellType.WALL };
+      } else {
+        cumulative += PIT_PROBABILITY;
+        if (rand < cumulative) {
+          row[x] = { type: CellType.PIT };
         } else {
-          cumulative += CONVEYOR_PROBABILITY;
+          cumulative += GEAR_PROBABILITY;
           if (rand < cumulative) {
-            const directions = [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST];
-            const isExpress = Math.random() < 0.5;
-            cell = {
-              type: isExpress ? CellType.CONVEYOR_EXPRESS : CellType.CONVEYOR_NORMAL,
-              direction: directions[Math.floor(Math.random() * directions.length)] as Direction,
+            row[x] = {
+              type: Math.random() < 0.5 ? CellType.GEAR_LEFT : CellType.GEAR_RIGHT,
             };
           } else {
             cumulative += LASER_PROBABILITY;
             if (rand < cumulative) {
               const directions = [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST];
-              cell = {
+              row[x] = {
                 type: CellType.LASER,
                 direction: directions[Math.floor(Math.random() * directions.length)] as Direction,
               };
-            } else {
-              cumulative += GEAR_PROBABILITY;
-              if (rand < cumulative) {
-                cell = {
-                  type: Math.random() < 0.5 ? CellType.GEAR_LEFT : CellType.GEAR_RIGHT,
-                };
-              } else {
-                cumulative += PUSHER_PROBABILITY;
-                if (rand < cumulative) {
-                  const pusherTypes = [
-                    CellType.PUSHER_NORTH,
-                    CellType.PUSHER_SOUTH,
-                    CellType.PUSHER_EAST,
-                    CellType.PUSHER_WEST,
-                  ];
-                  const pusherType = pusherTypes[Math.floor(Math.random() * pusherTypes.length)];
-                  cell = { type: pusherType! };
-                } else {
-                  cumulative += PIT_PROBABILITY;
-                  if (rand < cumulative) {
-                    cell = { type: CellType.PIT };
-                  }
-                }
-              }
             }
           }
         }
       }
-
-      row.push(cell);
     }
-    board.push(row);
   }
 
   const flagPositions = placeFlags(board, size);
@@ -90,6 +85,53 @@ export function generateMap(size: number): Cell[][] {
   }
 
   return board;
+}
+
+function createConveyorPaths(board: Cell[][], size: number): void {
+  // Create a few conveyor belt paths that make sense
+  const numPaths = Math.max(2, Math.floor(size / 5));
+  
+  for (let p = 0; p < numPaths; p++) {
+    // Choose starting point (not on border)
+    let startX = Math.floor(Math.random() * (size - 4)) + 2;
+    let startY = Math.floor(Math.random() * (size - 4)) + 2;
+    
+    // Choose direction
+    const directions = [
+      { dx: 1, dy: 0, dir: Direction.EAST },
+      { dx: 0, dy: 1, dir: Direction.SOUTH },
+      { dx: -1, dy: 0, dir: Direction.WEST },
+      { dx: 0, dy: -1, dir: Direction.NORTH },
+    ];
+    const direction = directions[Math.floor(Math.random() * directions.length)];
+    if (!direction) continue;
+    
+    // Create a path of 3-6 conveyor cells
+    const pathLength = Math.floor(Math.random() * 4) + 3;
+    let currentX = startX;
+    let currentY = startY;
+    
+    for (let i = 0; i < pathLength; i++) {
+      // Check bounds
+      if (currentX <= 0 || currentX >= size - 1 || currentY <= 0 || currentY >= size - 1) break;
+      
+      const row = board[currentY];
+      if (!row) break;
+      
+      // Only place on empty cells
+      const cell = row[currentX];
+      if (cell && cell.type === CellType.EMPTY) {
+        const isExpress = Math.random() < 0.3;
+        row[currentX] = {
+          type: isExpress ? CellType.CONVEYOR_EXPRESS : CellType.CONVEYOR_NORMAL,
+          direction: direction.dir as Direction,
+        };
+      }
+      
+      currentX += direction.dx;
+      currentY += direction.dy;
+    }
+  }
 }
 
 function hasWallCluster(board: Cell[][], x: number, y: number): boolean {

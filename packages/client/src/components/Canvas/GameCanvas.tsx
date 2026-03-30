@@ -214,63 +214,162 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
 function getCellColor(type: CellType): string {
   switch (type) {
     case CellType.WALL:
-      return '#333';
+      return '#555555';  // Gray walls
     case CellType.CONVEYOR_NORMAL:
-      return '#4a5568';
+      return '#8B7355';  // Brownish for normal conveyor
     case CellType.CONVEYOR_EXPRESS:
-      return '#2d3748';
+      return '#D4A574';  // Lighter brown for express
     case CellType.GEAR_LEFT:
-      return '#553c3c';
     case CellType.GEAR_RIGHT:
-      return '#3c553c';
+      return '#8FBC8F';  // Green for gears
     case CellType.PUSHER_NORTH:
     case CellType.PUSHER_SOUTH:
     case CellType.PUSHER_EAST:
     case CellType.PUSHER_WEST:
-      return '#553c55';
+      return '#CD5C5C';  // Red for pushers
     case CellType.PIT:
-      return '#000';
+      return '#1a1a1a';  // Very dark for pit
     case CellType.LASER:
-      return '#3c3c55';
+      return '#FFB6C1';  // Light pink for laser
     case CellType.FLAG_1:
-      return '#7c2d12';
+      return '#DC2626';  // Red flag
     case CellType.FLAG_2:
-      return '#166534';
+      return '#16A34A';  // Green flag
     case CellType.FLAG_3:
-      return '#1e40af';
+      return '#2563EB';  // Blue flag
     case CellType.FLAG_4:
-      return '#7c3aed';
+      return '#9333EA';  // Purple flag
     case CellType.FLAG_5:
-      return '#be123c';
+      return '#EA580C';  // Orange flag
     case CellType.ARCHIVE:
-      return '#854d0e';
+      return '#F59E0B';  // Amber for archive
     default:
-      return '#1e1b4b';
+      return '#E5E7EB';  // Light gray for empty
   }
 }
 
 function drawCellContent(ctx: CanvasRenderingContext2D, cell: Cell, x: number, y: number): void {
   const centerX = x + CELL_SIZE / 2;
   const centerY = y + CELL_SIZE / 2;
+  const size = CELL_SIZE;
 
-  if (cell.type === CellType.LASER && cell.direction !== undefined) {
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    const endX = centerX + Math.cos((cell.direction * Math.PI) / 180) * (CELL_SIZE / 2 - 2);
-    const endY = centerY + Math.sin((cell.direction * Math.PI) / 180) * (CELL_SIZE / 2 - 2);
-    ctx.lineTo(endX, endY);
-    ctx.stroke();
+  // Draw grid lines for empty cells
+  if (cell.type === CellType.EMPTY) {
+    ctx.strokeStyle = '#D1D5DB';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, size, size);
+    return;
   }
 
+  // WALL: Draw brick pattern
+  if (cell.type === CellType.WALL) {
+    ctx.fillStyle = '#374151';
+    ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+    ctx.strokeStyle = '#6B7280';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
+    // Brick lines
+    ctx.beginPath();
+    ctx.moveTo(x + size / 2, y + 2);
+    ctx.lineTo(x + size / 2, y + size - 2);
+    ctx.moveTo(x + 2, y + size / 2);
+    ctx.lineTo(x + size - 2, y + size / 2);
+    ctx.stroke();
+    return;
+  }
+
+  // PIT: Draw dark hole with warning border
+  if (cell.type === CellType.PIT) {
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, size * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#DC2626';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    return;
+  }
+
+  // CONVEYOR: Draw direction arrow
+  if ((cell.type === CellType.CONVEYOR_NORMAL || cell.type === CellType.CONVEYOR_EXPRESS) && cell.direction !== undefined) {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    const rotation = (cell.direction - 90) * (Math.PI / 180);
+    ctx.rotate(rotation);
+    
+    // Arrow body
+    ctx.fillStyle = cell.type === CellType.CONVEYOR_EXPRESS ? '#92400E' : '#78350F';
+    ctx.fillRect(-size * 0.3, -size * 0.1, size * 0.6, size * 0.2);
+    
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(size * 0.3, -size * 0.2);
+    ctx.lineTo(size * 0.45, 0);
+    ctx.lineTo(size * 0.3, size * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.restore();
+    return;
+  }
+
+  // GEAR: Draw rotation indicator
+  if (cell.type === CellType.GEAR_LEFT || cell.type === CellType.GEAR_RIGHT) {
+    ctx.strokeStyle = '#166534';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, size * 0.25, 0, Math.PI * 1.5);
+    ctx.stroke();
+    // Arrow indicating rotation direction
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(cell.type === CellType.GEAR_LEFT ? -Math.PI / 4 : Math.PI / 4);
+    ctx.fillStyle = '#166534';
+    ctx.beginPath();
+    ctx.moveTo(size * 0.25, -5);
+    ctx.lineTo(size * 0.25 + 8, 0);
+    ctx.lineTo(size * 0.25, 5);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  // LASER: Draw laser beam indicator
+  if (cell.type === CellType.LASER && cell.direction !== undefined) {
+    ctx.fillStyle = '#DC2626';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.strokeStyle = '#DC2626';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    const endX = centerX + Math.cos((cell.direction * Math.PI) / 180) * (size / 2 - 4);
+    const endY = centerY + Math.sin((cell.direction * Math.PI) / 180) * (size / 2 - 4);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    return;
+  }
+
+  // FLAGS: Draw flag number
   if (cell.type.startsWith('flag')) {
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const flagNum = cell.type.split('_')[1];
     ctx.fillText(flagNum ?? '?', centerX, centerY);
+    return;
+  }
+
+  // ARCHIVE: Draw spawn indicator
+  if (cell.type === CellType.ARCHIVE) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚑', centerX, centerY);
   }
 }
 
