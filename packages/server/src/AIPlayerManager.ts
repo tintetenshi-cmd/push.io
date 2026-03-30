@@ -63,7 +63,7 @@ export class AIPlayerManager {
         playerId: socketId,
         x: spawnPos.x,
         y: spawnPos.y,
-        direction: Direction.EAST,
+        direction: Direction.SOUTH,
         lives: 3,
         damage: 0,
         powerDown: false,
@@ -72,7 +72,7 @@ export class AIPlayerManager {
         equipment: [],
         archiveX: spawnPos.x,
         archiveY: spawnPos.y,
-        archiveDirection: Direction.EAST,
+        archiveDirection: Direction.SOUTH,
         destroyed: false,
       };
     }
