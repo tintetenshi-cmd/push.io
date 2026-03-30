@@ -347,6 +347,7 @@ function moveRobot(robot: Robot, distance: number, room: Room): void {
     return;
   }
   if (targetCell.type === CellType.WALL) {
+    console.log(`moveRobot blocked by WALL at (${newX},${newY})`);
     return;
   }
 
