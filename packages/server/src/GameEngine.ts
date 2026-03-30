@@ -8,9 +8,11 @@ const LASER_PROBABILITY = 0.03;
 
 export function generateMap(size: number): Cell[][] {
   const board: Cell[][] = [];
+  const SPAWN_ZONE_HEIGHT = 3;
+  const totalHeight = size + SPAWN_ZONE_HEIGHT;
 
-  // Initialize empty board
-  for (let y = 0; y < size; y++) {
+  // Initialize empty board (spawn zone + game area)
+  for (let y = 0; y < totalHeight; y++) {
     const row: Cell[] = [];
     for (let x = 0; x < size; x++) {
       row.push({ type: CellType.EMPTY });
@@ -18,21 +20,27 @@ export function generateMap(size: number): Cell[][] {
     board.push(row);
   }
 
-  // Place border walls
-  for (let y = 0; y < size; y++) {
+  // Place border walls (only on sides and bottom, not top)
+  for (let y = 0; y < totalHeight; y++) {
     for (let x = 0; x < size; x++) {
-      if (y === 0 || y === size - 1 || x === 0 || x === size - 1) {
+      // Left and right borders
+      if (x === 0 || x === size - 1) {
+        const row = board[y];
+        if (row) row[x] = { type: CellType.WALL };
+      }
+      // Bottom border
+      if (y === totalHeight - 1) {
         const row = board[y];
         if (row) row[x] = { type: CellType.WALL };
       }
     }
   }
 
-  // Create intelligent conveyor belt paths
-  createConveyorPaths(board, size);
+  // Create intelligent conveyor belt paths (only in game area, below spawn zone)
+  createConveyorPaths(board, size, SPAWN_ZONE_HEIGHT);
 
-  // Place other elements with lower probabilities
-  for (let y = 1; y < size - 1; y++) {
+  // Place other elements with lower probabilities (only in game area)
+  for (let y = SPAWN_ZONE_HEIGHT; y < totalHeight - 1; y++) {
     const row = board[y];
     if (!row) continue;
     
@@ -71,7 +79,10 @@ export function generateMap(size: number): Cell[][] {
     }
   }
 
-  const flagPositions = placeFlags(board, size);
+  // Place flags (only in game area, below spawn zone)
+  const flagPositions = placeFlags(board, size, SPAWN_ZONE_HEIGHT);
+  
+  // Place archive marker at first flag position
   const firstPos = flagPositions[0];
   if (firstPos) {
     const archiveX = firstPos.x;
@@ -87,14 +98,16 @@ export function generateMap(size: number): Cell[][] {
   return board;
 }
 
-function createConveyorPaths(board: Cell[][], size: number): void {
-  // Create a few conveyor belt paths that make sense
+function createConveyorPaths(board: Cell[][], size: number, spawnOffset: number): void {
+  const totalHeight = board.length;
+  
+  // Create a few conveyor belt paths that make sense (only in game area)
   const numPaths = Math.max(2, Math.floor(size / 5));
   
   for (let p = 0; p < numPaths; p++) {
-    // Choose starting point (not on border)
+    // Choose starting point in game area (below spawn zone)
     let startX = Math.floor(Math.random() * (size - 4)) + 2;
-    let startY = Math.floor(Math.random() * (size - 4)) + 2;
+    let startY = Math.floor(Math.random() * (totalHeight - spawnOffset - 4)) + spawnOffset + 2;
     
     // Choose direction
     const directions = [
@@ -112,8 +125,8 @@ function createConveyorPaths(board: Cell[][], size: number): void {
     let currentY = startY;
     
     for (let i = 0; i < pathLength; i++) {
-      // Check bounds
-      if (currentX <= 0 || currentX >= size - 1 || currentY <= 0 || currentY >= size - 1) break;
+      // Check bounds (stay in game area, not spawn zone)
+      if (currentX <= 0 || currentX >= size - 1 || currentY <= spawnOffset || currentY >= totalHeight - 1) break;
       
       const row = board[currentY];
       if (!row) break;
@@ -153,8 +166,9 @@ function hasWallCluster(board: Cell[][], x: number, y: number): boolean {
   return wallCount >= 4;
 }
 
-function placeFlags(board: Cell[][], size: number): Position[] {
+function placeFlags(board: Cell[][], size: number, spawnOffset: number): Position[] {
   const flags: Position[] = [];
+  const totalHeight = board.length;
   const flagTypes = [
     CellType.FLAG_1,
     CellType.FLAG_2,
@@ -167,8 +181,9 @@ function placeFlags(board: Cell[][], size: number): Position[] {
     let placed = false;
     let attempts = 0;
     while (!placed && attempts < 100) {
+      // Place flags only in game area (below spawn zone)
       const x = Math.floor(Math.random() * (size - 2)) + 1;
-      const y = Math.floor(Math.random() * (size - 2)) + 1;
+      const y = Math.floor(Math.random() * (totalHeight - spawnOffset - 2)) + spawnOffset + 1;
 
       const row = board[y];
       if (!row) continue;

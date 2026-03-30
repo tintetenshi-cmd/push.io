@@ -197,26 +197,53 @@ export class RoomManager {
 
   private findSpawnPosition(room: Room): Position | null {
     const size = room.mapSize;
-
-    // Search entire board for valid spawn positions
-    for (let y = 1; y < size - 1; y++) {
-      for (let x = 1; x < size - 1; x++) {
-        let occupied = false;
-        for (const player of room.players.values()) {
-          if (player.robot && player.robot.x === x && player.robot.y === y) {
-            occupied = true;
-            break;
+    const spawnY = 1; // Middle row of the 3-row spawn zone
+    
+    // Get occupied positions on the spawn row
+    const occupiedX = new Set<number>();
+    for (const player of room.players.values()) {
+      if (player.robot && player.robot.y === spawnY) {
+        occupiedX.add(player.robot.x);
+        // Also mark adjacent cells (need at least 1 cell spacing)
+        occupiedX.add(player.robot.x - 1);
+        occupiedX.add(player.robot.x + 1);
+      }
+    }
+    
+    // Find a valid position on spawn row with spacing
+    // Start from left and try to space robots evenly
+    const maxPlayers = room.maxPlayers;
+    const spacing = Math.floor((size - 2) / (maxPlayers + 1));
+    
+    for (let i = 1; i <= maxPlayers; i++) {
+      const x = 1 + (i * spacing);
+      if (x >= size - 1) break;
+      
+      // Check if position is available (not occupied and not a wall/pit)
+      if (!occupiedX.has(x)) {
+        const row = room.board[spawnY];
+        if (row) {
+          const cell = row[x];
+          if (cell && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
+            return { x, y: spawnY };
           }
-        }
-        const row = room.board[y];
-        if (!row) continue;
-        const cell = row[x];
-        if (!cell) continue;
-        if (!occupied && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
-          return { x, y };
         }
       }
     }
+    
+    // Fallback: try any available position on spawn row
+    for (let x = 2; x < size - 2; x += 2) {
+      if (!occupiedX.has(x)) {
+        const row = room.board[spawnY];
+        if (row) {
+          const cell = row[x];
+          if (cell && cell.type !== CellType.WALL && cell.type !== CellType.PIT) {
+            return { x, y: spawnY };
+          }
+        }
+      }
+    }
+    
     return null;
   }
 

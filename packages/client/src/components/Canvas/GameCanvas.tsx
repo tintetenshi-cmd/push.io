@@ -107,10 +107,28 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     ctx.translate(offset.x, offset.y);
     ctx.scale(scale, scale);
 
+    const boardHeight = board.length;
     const startCol = Math.max(0, Math.floor(-offset.x / (CELL_SIZE * scale)));
     const endCol = Math.min(mapSize, Math.ceil((canvas.clientWidth - offset.x) / (CELL_SIZE * scale)));
     const startRow = Math.max(0, Math.floor(-offset.y / (CELL_SIZE * scale)));
-    const endRow = Math.min(mapSize, Math.ceil((canvas.clientHeight - offset.y) / (CELL_SIZE * scale)));
+    const endRow = Math.min(boardHeight, Math.ceil((canvas.clientHeight - offset.y) / (CELL_SIZE * scale)));
+
+    // Draw spawn zone background (first 3 rows)
+    if (startRow < 3) {
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue tint for spawn zone
+      ctx.fillRect(0, 0, mapSize * CELL_SIZE, 3 * CELL_SIZE);
+      
+      // Draw spawn zone border
+      ctx.strokeStyle = '#3B82F6';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, mapSize * CELL_SIZE, 3 * CELL_SIZE);
+      
+      // Draw "SPAWN" label
+      ctx.fillStyle = '#3B82F6';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPAWN ZONE', (mapSize * CELL_SIZE) / 2, 1.5 * CELL_SIZE + 4);
+    }
 
     for (let row = startRow; row < endRow; row++) {
       for (let col = startCol; col < endCol; col++) {
