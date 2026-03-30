@@ -27,7 +27,7 @@ export default function ReadyBtn({ registers, isReady: serverIsReady }: ReadyBtn
     if (gameState.phase === GamePhase.PROGRAMMING) {
       setIsReady(false);
     }
-  }, [gameState.phase, gameState.turnNumber]);
+  }, [gameState.phase]);
 
   const filledRegisters = registers.filter((r) => r !== null).length;
   const canReady = filledRegisters === 5;
