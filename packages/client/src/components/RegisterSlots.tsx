@@ -33,14 +33,15 @@ function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): R
     accept: 'CARD',
     drop: (item: { card: Card }) => {
       if (!socket || isLocked) return;
-      // Use the ref to get fresh registers value
-      const newRegisters = [...registersRef.current];
-      newRegisters[index] = item.card;
-      console.log('Dropping card', item.card.type, 'into slot', index + 1, 'registers:', newRegisters.map((r, i) => `slot${i+1}: ${r?.type || 'empty'}`).join(', '));
-      socket.emit('game:program', {
-        registers: newRegisters,
-        powerDown: false,
-      });
+      const handleDrop = (card: Card, index: number) => {
+        const newRegisters = [...currentRegisters];
+        newRegisters[index] = card;
+        socket.emit('game:program', {
+          registers: newRegisters,
+          powerDown: false,
+        });
+      };
+      handleDrop(item.card, index);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -67,9 +68,6 @@ function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): R
 }
 
 export default function RegisterSlots({ player }: RegisterSlotsProps): React.ReactElement {
-  // Debug: log current registers
-  console.log('RegisterSlots registers:', player.registers.map((r, i) => `slot${i+1}: ${r?.type || 'empty'}`).join(', '));
-
   return (
     <div className="bg-primary-800/50 rounded-xl p-4">
       <h3 className="font-semibold mb-4 text-center">Registres (1-5)</h3>

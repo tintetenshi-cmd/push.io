@@ -48,14 +48,6 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     animationProgressRef.current = gameState.stepProgress / 100;
   }, [gameState.stepProgress]);
 
-  // Debug: log players and their robots
-  useEffect(() => {
-    console.log('GameCanvas players:', players);
-    players.forEach((p, i) => {
-      console.log(`Player ${i}:`, p.name, 'robot:', p.robot, 'hand:', p.hand);
-    });
-  }, [players]);
-
   const mapSize = room.mapSize;
   const board = room.board;
   const boardPixelSize = mapSize * CELL_SIZE;
@@ -173,13 +165,6 @@ export default function GameCanvas({ room, players }: GameCanvasProps): React.Re
     if (!ctx) return;
 
     drawBoard(ctx, canvas);
-    
-    // Log robot positions for debugging
-    players.forEach((p) => {
-      if (p.robot) {
-        console.log(`Canvas rendering: ${p.name} at (${p.robot.x},${p.robot.y}) direction=${p.robot.direction}`);
-      }
-    });
   }, [drawBoard, players]);
 
   const handleWheel = (e: React.WheelEvent): void => {
