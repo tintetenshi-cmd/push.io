@@ -278,6 +278,7 @@ export function executePhase(room: Room, phaseNumber: number): void {
 }
 
 function executeCard(robot: Robot, cardType: CardType, room: Room): void {
+  console.log(`executeCard: robot at (${robot.x},${robot.y}) direction=${robot.direction} executing ${cardType}`);
   switch (cardType) {
     case CardType.FORWARD_1:
       moveRobot(robot, 1, room);
@@ -298,12 +299,15 @@ function executeCard(robot: Robot, cardType: CardType, room: Room): void {
       break;
     case CardType.ROTATE_LEFT:
       robot.direction = (robot.direction + 270) % 360 as Direction;
+      console.log(`executeCard: ROTATE_LEFT new direction=${robot.direction}`);
       break;
     case CardType.ROTATE_RIGHT:
       robot.direction = (robot.direction + 90) % 360 as Direction;
+      console.log(`executeCard: ROTATE_RIGHT new direction=${robot.direction}`);
       break;
     case CardType.U_TURN:
       robot.direction = (robot.direction + 180) % 360 as Direction;
+      console.log(`executeCard: U_TURN new direction=${robot.direction}`);
       break;
     case CardType.POWER_DOWN:
       break;
@@ -311,6 +315,8 @@ function executeCard(robot: Robot, cardType: CardType, room: Room): void {
 }
 
 function moveRobot(robot: Robot, distance: number, room: Room): void {
+  console.log(`moveRobot called: robot at (${robot.x},${robot.y}) direction=${robot.direction} distance=${distance}`);
+  
   const dx = distance > 0
     ? (robot.direction === Direction.EAST ? 1 : robot.direction === Direction.WEST ? -1 : 0)
     : (robot.direction === Direction.EAST ? -1 : robot.direction === Direction.WEST ? 1 : 0);
@@ -318,8 +324,12 @@ function moveRobot(robot: Robot, distance: number, room: Room): void {
     ? (robot.direction === Direction.SOUTH ? 1 : robot.direction === Direction.NORTH ? -1 : 0)
     : (robot.direction === Direction.SOUTH ? -1 : robot.direction === Direction.NORTH ? 1 : 0);
 
+  console.log(`moveRobot calculated: dx=${dx}, dy=${dy} (Direction: NORTH=${Direction.NORTH}, EAST=${Direction.EAST}, SOUTH=${Direction.SOUTH}, WEST=${Direction.WEST})`);
+
   const newX = robot.x + dx;
   const newY = robot.y + dy;
+  
+  console.log(`moveRobot new position: (${newX},${newY})`);
 
   if (newX < 0 || newX >= room.mapSize || newY < 0 || newY >= room.mapSize) {
     handleFall(robot, room);
@@ -345,13 +355,18 @@ function moveRobot(robot: Robot, distance: number, room: Room): void {
     if (pushChain(room, targetRobot, dx, dy, 0)) {
       robot.x = newX;
       robot.y = newY;
+      console.log(`moveRobot final position (after push): (${robot.x},${robot.y})`);
+    } else {
+      console.log(`moveRobot blocked by robot at (${newX},${newY})`);
     }
   } else {
     robot.x = newX;
     robot.y = newY;
+    console.log(`moveRobot final position: (${robot.x},${robot.y})`);
   }
 
   if (targetCell.type === CellType.PIT) {
+    console.log(`moveRobot robot fell into pit at (${newX},${newY})`);
     handleFall(robot, room);
   }
 }
