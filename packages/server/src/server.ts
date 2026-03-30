@@ -397,47 +397,13 @@ const processAITurns = (room: ReturnType<RoomManager['getRoom']>): void => {
       }
     }
 
-    // Check if all players have programmed AND are ready
-    const checkAllReady = () => {
-      const allReady = Array.from(room.players.values()).every(
-        p => (p.registers.every(r => r !== null) && p.isReady) || (p.robot?.powerDown ?? false)
-      );
-
-      if (allReady && room.gameState.phase === GamePhase.PROGRAMMING) {
-        console.log('All players ready, starting resolution phase');
-        room.gameState.phase = GamePhase.RESOLUTION;
-        startPhaseResolution(room);
-        const update = serializeRoom(room);
-        if (update) {
-          io.to(room.id).emit('room:update', update);
-        }
-        return true;
-      }
-      return false;
-    };
-
-    // Initial check after AI programming
-    if (!checkAllReady()) {
-      // If not all ready, check every 500ms until human is ready
-      const checkInterval = setInterval(() => {
-        if (room.gameState.phase !== GamePhase.PROGRAMMING) {
-          clearInterval(checkInterval);
-          return;
-        }
-        if (checkAllReady()) {
-          clearInterval(checkInterval);
-        }
-      }, 500);
-
-      // Clear interval after 30 seconds (timeout)
-      setTimeout(() => clearInterval(checkInterval), 30000);
-    }
-
+    // Just emit the updated room state - don't check if all ready
+    // The turn will only start when human explicitly clicks Ready button
     const update = serializeRoom(room);
     if (update) {
       io.to(room.id).emit('room:update', update);
     }
-  }, 3000); // 3 secondes de délai
+  }, 3000);
 };
 
 function startPhaseResolution(room: Room): void {

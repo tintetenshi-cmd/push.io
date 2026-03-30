@@ -327,7 +327,9 @@ export class RoomManager {
     room.gameState.turnNumber = 1;
     room.lastActivity = Date.now();
 
+    // Reset isReady for all players - they must explicitly click Ready during programming
     for (const p of room.players.values()) {
+      p.isReady = false;
       this.dealCards(p);
     }
 
