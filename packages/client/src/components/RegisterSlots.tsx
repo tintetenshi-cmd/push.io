@@ -46,7 +46,7 @@ function DropSlot({ index, card, isLocked, currentRegisters }: DropSlotProps): R
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
-  }), [socket, isLocked, index]); // Add dependencies
+  }), [socket, isLocked, index, currentRegisters]);
 
   return (
     <div
