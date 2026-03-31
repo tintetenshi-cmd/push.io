@@ -1,8 +1,8 @@
-import type { Player } from '@shared/types';
+import type { Player, Card } from '@roborally/shared';
 import DropSlot from './DropSlot';
-import { useGameStore } from '../stores/gameStore';
+import { useGameStore } from '../hooks/useGameStore';
 import { useState, useEffect } from 'react';
-import { GamePhase } from '@shared/constants';
+import { GamePhase } from '@roborally/shared';
 
 interface RegisterSlotsWithButtonsProps {
   player: Player;
@@ -24,7 +24,7 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
     }
   }, [gameState.phase]);
 
-  const filledRegisters = player.registers.filter(r => r !== null).length;
+  const filledRegisters = player.registers.filter((r: Card | null) => r !== null).length;
   const allFilled = filledRegisters === 5;
 
   const handleReady = () => {
@@ -50,7 +50,7 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
         <div className="flex-1">
           <h3 className="font-semibold mb-2 text-center text-sm">Registres (1-5)</h3>
           <div className="flex justify-center gap-2">
-            {player.registers.map((card, index) => (
+            {player.registers.map((card: Card | null, index: number) => (
               <DropSlot
                 key={index}
                 index={index}
