@@ -97,16 +97,20 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
       )}
 
       <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
-        <div className="flex-[2] flex flex-col gap-4 min-w-0 min-h-0">
+        <div className="flex-[3] flex flex-col gap-4 min-w-0 min-h-0">
           <div className="flex-1 relative rounded-xl overflow-hidden bg-primary-900/50 flex items-center justify-center min-h-0">
             <GameCanvas room={room} players={players} />
           </div>
 
           {currentPlayer && gameState.phase.toLowerCase() === 'programming' && (
             <div className="flex flex-col gap-2">
-              <RegisterSlots player={currentPlayer} />
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <RegisterSlots player={currentPlayer} />
+                </div>
+                <ReadyBtn registers={currentPlayer.registers} isReady={currentPlayer.isReady} />
+              </div>
               <CardHand player={{ hand: currentPlayer.hand, registers: currentPlayer.registers }} />
-              <ReadyBtn registers={currentPlayer.registers} isReady={currentPlayer.isReady} />
             </div>
           )}
         </div>
