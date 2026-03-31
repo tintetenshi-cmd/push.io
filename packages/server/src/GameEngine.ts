@@ -672,23 +672,33 @@ function checkCheckpoints(room: Room): void {
     const row = room.board[robot.y];
     if (!row) continue;
     const cell = row[robot.x];
-    if (!cell) continue;
+    if (!cell) {
+      console.log(`[DEBUG] No cell at position (${robot.x}, ${robot.y}) for player ${player.id}`);
+      continue;
+    }
+    
     const flagIndex = flagTypes.indexOf(cell.type);
+    console.log(`[DEBUG] Player ${player.id} at (${robot.x}, ${robot.y}), cell type: ${cell.type}, flagIndex: ${flagIndex}`);
 
     if (flagIndex !== -1) {
       const flagNumber = flagIndex + 1;
       const lastFlag = robot.flagsTouched.length > 0 ? robot.flagsTouched[robot.flagsTouched.length - 1]! : 0;
+
+      console.log(`[DEBUG] Checking flag ${flagNumber}, lastFlag: ${lastFlag}, flagsTouched: ${robot.flagsTouched}`);
 
       if (flagNumber === lastFlag + 1 && !robot.flagsTouched.includes(flagNumber)) {
         robot.flagsTouched.push(flagNumber);
         robot.archiveX = robot.x;
         robot.archiveY = robot.y;
         robot.archiveDirection = robot.direction;
+        console.log(`[DEBUG] Flag ${flagNumber} collected by player ${player.id}!`);
 
         if (robot.flagsTouched.length === 5) {
           room.gameState.winner = player.id;
           room.gameState.phase = GamePhase.ENDED;
         }
+      } else {
+        console.log(`[DEBUG] Flag ${flagNumber} not collected. Need flag ${lastFlag + 1} first.`);
       }
     }
   }
