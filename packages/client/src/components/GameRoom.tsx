@@ -4,8 +4,7 @@ import { LogOut, Send, MessageSquare } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import GameCanvas from './Canvas/GameCanvas';
 import CardHand from './CardHand';
-import RegisterSlots from './RegisterSlots';
-import ReadyBtn from './ReadyBtn';
+import RegisterSlotsWithButtons from './RegisterSlotsWithButtons';
 import PlayerList from './PlayerList';
 
 interface GameRoomProps {
@@ -102,17 +101,12 @@ export default function GameRoom({ onLeave }: GameRoomProps): React.ReactElement
             <GameCanvas room={room} players={players} />
           </div>
 
-          {currentPlayer && gameState.phase.toLowerCase() === 'programming' && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <RegisterSlots player={currentPlayer} />
-                </div>
-                <ReadyBtn registers={currentPlayer.registers} isReady={currentPlayer.isReady} />
-              </div>
-              <CardHand player={{ hand: currentPlayer.hand, registers: currentPlayer.registers }} />
-            </div>
-          )}
+      {currentPlayer && gameState.phase.toLowerCase() === 'programming' && (
+        <div className="flex flex-col gap-2">
+          <RegisterSlotsWithButtons player={currentPlayer} />
+          <CardHand player={{ hand: currentPlayer.hand, registers: currentPlayer.registers }} />
+        </div>
+      )}
         </div>
 
         {showSidebar && (
