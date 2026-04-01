@@ -21,10 +21,10 @@ const getAvailableCards = (hand: Card[], registers: (Card | null)[]): Card[] => 
   return hand.filter((card) => !registerCardIds.has(card.id));
 };
 
-const CARD_ICONS: Record<string, React.ReactNode> = {
-  forward_1: <Move className="w-6 h-6" />,
-  forward_2: <Move className="w-6 h-6" />,
-  forward_3: <Move className="w-6 h-6" />,
+const CARD_ICONS: Record<string, React.ReactElement> = {
+  forward_1: <ArrowUp className="w-6 h-6" />,
+  forward_2: <ArrowUp className="w-6 h-6" />,
+  forward_3: <ArrowUp className="w-6 h-6" />,
   backup_1: <ArrowLeft className="w-6 h-6" />,
   backup_2: <ArrowLeft className="w-6 h-6" />,
   backup_3: <ArrowLeft className="w-6 h-6" />,
@@ -32,19 +32,6 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
   rotate_right: <RotateCw className="w-6 h-6" />,
   u_turn: <RotateCw className="w-6 h-6" />,
   power_down: <span className="text-xs">PD</span>,
-};
-
-const CARD_NAMES: Record<string, string> = {
-  forward_1: 'Avancer 1',
-  forward_2: 'Avancer 2',
-  forward_3: 'Avancer 3',
-  backup_1: 'Reculer 1',
-  backup_2: 'Reculer 2',
-  backup_3: 'Reculer 3',
-  rotate_left: 'Gauche',
-  rotate_right: 'Droite',
-  u_turn: 'Demi-tour',
-  power_down: 'Power Down',
 };
 
 function DraggableCard({ card, index }: { card: Card; index: number }): React.ReactElement {
