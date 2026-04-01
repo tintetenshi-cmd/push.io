@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
-import { Move, RotateCw, RotateCcw, ArrowLeft } from 'lucide-react';
+import { ArrowUp, RotateCw, RotateCcw, ArrowLeft } from 'lucide-react';
 import type { Card } from '@roborally/shared';
 
 interface CardHandProps {
