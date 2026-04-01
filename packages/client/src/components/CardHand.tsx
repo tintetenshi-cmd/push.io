@@ -59,12 +59,11 @@ function DraggableCard({ card, index }: { card: Card; index: number }): React.Re
   return (
     <div
       ref={drag}
-      className={`card-hand ${isDragging ? 'opacity-50' : ''}`}
+      className={`card-hand-compact ${isDragging ? 'opacity-50' : ''}`}
       style={{ cursor: 'grab' }}
     >
-      <div className="text-primary-200 mb-1">{CARD_ICONS[card.type]}</div>
-      <div className="text-xs text-center text-primary-300">{CARD_NAMES[card.type]}</div>
-      <div className="text-xs text-primary-400 mt-1">#{card.priority}</div>
+      <div className="text-primary-200">{CARD_ICONS[card.type]}</div>
+      <div className="text-[10px] text-center text-primary-400">#{card.priority}</div>
     </div>
   );
 }
@@ -74,14 +73,16 @@ export default function CardHand({ player }: CardHandProps): React.ReactElement 
   const placedCards = getCardsInRegisters(player.registers).length;
 
   return (
-    <div className="bg-primary-800/50 rounded-xl p-4">
-      <h3 className="font-semibold mb-3">
-        Main ({availableCards.length} disponibles, {placedCards} placées)
-      </h3>
-      <div className="flex flex-wrap gap-2 justify-center">
-        {availableCards.map((card, index) => (
-          <DraggableCard key={card.id} card={card} index={index} />
-        ))}
+    <div className="bg-primary-800/50 rounded-xl p-2">
+      <div className="flex items-center gap-3">
+        <h3 className="font-semibold text-xs whitespace-nowrap">
+          Main ({availableCards.length}/{availableCards.length + placedCards})
+        </h3>
+        <div className="flex gap-1 overflow-x-auto">
+          {availableCards.map((card, index) => (
+            <DraggableCard key={card.id} card={card} index={index} />
+          ))}
+        </div>
       </div>
     </div>
   );

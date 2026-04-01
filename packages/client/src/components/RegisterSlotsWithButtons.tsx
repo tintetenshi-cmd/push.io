@@ -46,7 +46,7 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
 
   return (
     <div className="bg-primary-800/50 rounded-xl p-3">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
         <div className="flex-1">
           <h3 className="font-semibold mb-2 text-center text-sm">Registres (1-5)</h3>
           <div className="flex justify-center gap-2">
@@ -62,11 +62,11 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
           </div>
         </div>
         
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 border-l border-primary-600/50 pl-3">
           <button
             onClick={handleReady}
             disabled={!allFilled}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+            className={`px-3 py-2 rounded-lg font-medium text-xs transition-all min-w-[80px] ${
               isReady
                 ? 'bg-green-500/80 hover:bg-green-500 text-white'
                 : allFilled
@@ -79,7 +79,7 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
           
           <button
             onClick={handlePowerDown}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+            className={`px-3 py-2 rounded-lg font-medium text-xs transition-all min-w-[80px] ${
               powerDown
                 ? 'bg-yellow-500/80 hover:bg-yellow-500 text-white'
                 : 'bg-primary-700 hover:bg-primary-600 text-white'

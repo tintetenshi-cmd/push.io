@@ -59,6 +59,12 @@
            flex flex-col items-center justify-center shadow-md cursor-grab
            hover:shadow-lg hover:-translate-y-1 transition-all;
   }
+
+  .card-hand-compact {
+    @apply w-14 h-16 rounded-lg border-2 border-primary-500 bg-primary-600 
+           flex flex-col items-center justify-center shadow-sm cursor-grab
+           hover:shadow-md hover:-translate-y-0.5 transition-all flex-shrink-0;
+  }
   
   .color-swatch {
     @apply w-10 h-10 rounded-full border-4 border-transparent cursor-pointer
