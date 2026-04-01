@@ -127,7 +127,7 @@ export default function MenuPrincipal({ onClose, onCreateRoom, onJoinRoom }: Men
                   type="text"
                   value={roomName}
                   onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="Ma partie RoboRally"
+                  placeholder="Ma partie Push.io"
                   className="w-full px-4 py-3 rounded-lg bg-primary-900/50 border border-primary-600 focus:border-primary-400 focus:outline-none"
                   maxLength={20}
                 />

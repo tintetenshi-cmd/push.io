@@ -20,7 +20,7 @@ export default function RulesModal({ onClose }: RulesModalProps): React.ReactEle
           <div className="flex justify-between items-center mb-6 sticky top-0 bg-primary-800 py-2 z-10">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <BookOpen className="w-6 h-6" />
-              Règles RoboRally
+              Règles Push.io
             </h2>
             <button onClick={onClose} className="p-2 hover:bg-primary-700/50 rounded-lg">
               <X className="w-6 h-6" />
@@ -34,7 +34,7 @@ export default function RulesModal({ onClose }: RulesModalProps): React.ReactEle
                 Objectif
               </h3>
               <p className="text-primary-200">
-                RoboRally est une course de robots dans une usine chaotique. 
+                Push.io est une course de robots dans une usine chaotique. 
                 L'objectif est d'être le premier à toucher les drapeaux dans l'ordre 
                 strict 1→2→3→4→5.
               </p>

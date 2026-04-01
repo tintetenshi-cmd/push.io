@@ -9,8 +9,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'RoboRally Online',
-        short_name: 'RoboRally',
+        name: 'Push.io',
+        short_name: 'Push.io',
         description: 'Course de robots multijoueur en temps réel',
         theme_color: '#6366f1',
         background_color: '#1e1b4b',
