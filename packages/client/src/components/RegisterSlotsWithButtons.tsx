@@ -12,11 +12,33 @@ interface RegisterSlotsWithButtonsProps {
 
 const CARD_ICONS: Record<string, React.ReactElement> = {
   forward_1: <ArrowUp className="w-6 h-6" />,
-  forward_2: <ArrowUp className="w-6 h-6" />,
-  forward_3: <ArrowUp className="w-6 h-6" />,
+  forward_2: (
+    <div className="flex flex-col -space-y-2">
+      <ArrowUp className="w-5 h-5" />
+      <ArrowUp className="w-5 h-5" />
+    </div>
+  ),
+  forward_3: (
+    <div className="flex flex-col -space-y-2">
+      <ArrowUp className="w-4 h-4" />
+      <ArrowUp className="w-4 h-4" />
+      <ArrowUp className="w-4 h-4" />
+    </div>
+  ),
   backup_1: <ArrowLeft className="w-6 h-6" />,
-  backup_2: <ArrowLeft className="w-6 h-6" />,
-  backup_3: <ArrowLeft className="w-6 h-6" />,
+  backup_2: (
+    <div className="flex flex-col -space-y-2">
+      <ArrowLeft className="w-5 h-5" />
+      <ArrowLeft className="w-5 h-5" />
+    </div>
+  ),
+  backup_3: (
+    <div className="flex flex-col -space-y-2">
+      <ArrowLeft className="w-4 h-4" />
+      <ArrowLeft className="w-4 h-4" />
+      <ArrowLeft className="w-4 h-4" />
+    </div>
+  ),
   rotate_left: <RotateCcw className="w-6 h-6" />,
   rotate_right: <RotateCw className="w-6 h-6" />,
   u_turn: <RotateCw className="w-6 h-6" />,
