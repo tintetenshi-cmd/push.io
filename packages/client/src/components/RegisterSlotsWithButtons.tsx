@@ -3,6 +3,63 @@ import DropSlot from './DropSlot';
 import { useGameStore } from '../hooks/useGameStore';
 import { useState, useEffect } from 'react';
 import { GamePhase } from '@roborally/shared';
+import { ArrowUp, RotateCw, RotateCcw, ArrowLeft } from 'lucide-react';
+import { useDrag } from 'react-dnd';
+
+interface RegisterSlotsWithButtonsProps {
+  player: Player;
+}
+
+const CARD_ICONS: Record<string, React.ReactElement> = {
+  forward_1: <ArrowUp className="w-6 h-6" />,
+  forward_2: <ArrowUp className="w-6 h-6" />,
+  forward_3: <ArrowUp className="w-6 h-6" />,
+  backup_1: <ArrowLeft className="w-6 h-6" />,
+  backup_2: <ArrowLeft className="w-6 h-6" />,
+  backup_3: <ArrowLeft className="w-6 h-6" />,
+  rotate_left: <RotateCcw className="w-6 h-6" />,
+  rotate_right: <RotateCw className="w-6 h-6" />,
+  u_turn: <RotateCw className="w-6 h-6" />,
+  power_down: <span className="text-xs">PD</span>,
+};
+
+function DraggableCard({ card, index }: { card: Card; index: number }): React.ReactElement {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'CARD',
+    item: { card, index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={drag}
+      className={`card-hand ${isDragging ? 'opacity-50' : ''}`}
+      style={{ cursor: 'grab' }}
+    >
+      <div className="text-primary-200">{CARD_ICONS[card.type]}</div>
+      <div className="text-[10px] text-center text-primary-400">#{card.priority}</div>
+    </div>
+  );
+}
+
+function CardHandSection({ hand, registers }: { hand: Card[]; registers: (Card | null)[] }): React.ReactElement {
+  const registerCardIds = new Set(registers.filter((r): r is Card => r !== null).map((c) => c.id));
+  const availableCards = hand.filter((card) => !registerCardIds.has(card.id));
+  const placedCards = registers.filter((r): r is Card => r !== null).length;
+
+  return (
+    <div className="flex-1">
+      <h3 className="font-semibold mb-2 text-center text-sm">Main ({availableCards.length}/{availableCards.length + placedCards})</h3>
+      <div className="flex justify-center gap-2 flex-wrap">
+        {availableCards.map((card, index) => (
+          <DraggableCard key={card.id} card={card} index={index} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface RegisterSlotsWithButtonsProps {
   player: Player;
@@ -46,7 +103,14 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
 
   return (
     <div className="bg-primary-800/50 rounded-xl p-3">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
+        {/* Main Section */}
+        <CardHandSection hand={player.hand} registers={player.registers} />
+        
+        {/* Divider */}
+        <div className="w-px h-24 bg-primary-600/50" />
+        
+        {/* Registers Section */}
         <div className="flex-1">
           <h3 className="font-semibold mb-2 text-center text-sm">Registres (1-5)</h3>
           <div className="flex justify-center gap-2">
@@ -62,7 +126,11 @@ export default function RegisterSlotsWithButtons({ player }: RegisterSlotsWithBu
           </div>
         </div>
         
-        <div className="flex flex-col gap-2 border-l border-primary-600/50 pl-3">
+        {/* Divider */}
+        <div className="w-px h-16 bg-primary-600/50" />
+        
+        {/* Buttons Section */}
+        <div className="flex flex-col gap-2">
           <button
             onClick={handleReady}
             disabled={!allFilled}

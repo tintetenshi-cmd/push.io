@@ -46,7 +46,7 @@ function DraggableCard({ card, index }: { card: Card; index: number }): React.Re
   return (
     <div
       ref={drag}
-      className={`card-hand-compact ${isDragging ? 'opacity-50' : ''}`}
+      className={`card-hand ${isDragging ? 'opacity-50' : ''}`}
       style={{ cursor: 'grab' }}
     >
       <div className="text-primary-200">{CARD_ICONS[card.type]}</div>
