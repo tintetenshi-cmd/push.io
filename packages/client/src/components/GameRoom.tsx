@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { LogOut, Send, MessageSquare } from 'lucide-react';
 import { useGameStore } from '../hooks/useGameStore';
 import GameCanvas from './Canvas/GameCanvas';
-import CardHand from './CardHand';
 import RegisterSlotsWithButtons from './RegisterSlotsWithButtons';
 import PlayerList from './PlayerList';
 
